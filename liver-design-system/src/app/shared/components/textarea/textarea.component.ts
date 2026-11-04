@@ -39,7 +39,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
         [value]="value"
         (input)="onInputChange($event)"
         (blur)="onBlur()"
-        class="w-full p-3.5 text-sm bg-white border border-neutral-300 hover:border-liver-red/60 rounded-lg focus:outline-none focus:border-liver-red focus:ring-2 focus:ring-liver-red/20 text-liver-black font-medium transition-all disabled:bg-neutral-100 disabled:cursor-not-allowed"
+        class="w-full p-3.5 text-sm bg-white border border-neutral-300 hover:border-liver-red rounded-lg focus:outline-none focus:border-liver-red focus:ring-2 focus:ring-liver-red/20 text-liver-black font-medium transition-all disabled:bg-neutral-100 disabled:cursor-not-allowed"
       ></textarea>
 
       @if (hint) {

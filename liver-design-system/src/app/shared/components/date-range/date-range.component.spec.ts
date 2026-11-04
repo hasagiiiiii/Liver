@@ -96,3 +96,4 @@ describe('DateRangeComponent', () => {
     expect(component.selectingState).toBe('START');
   });
 });
+

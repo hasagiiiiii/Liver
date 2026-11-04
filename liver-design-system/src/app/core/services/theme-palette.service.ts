@@ -12,6 +12,18 @@ export interface ThemePalette {
   accentBorder: string;
 }
 
+function hexToRgb(hex: string): string {
+  if (!hex) return '0 0 0';
+  let clean = hex.replace('#', '').trim();
+  if (clean.length === 3) {
+    clean = clean.split('').map(c => c + c).join('');
+  }
+  const r = parseInt(clean.substring(0, 2), 16) || 0;
+  const g = parseInt(clean.substring(2, 4), 16) || 0;
+  const b = parseInt(clean.substring(4, 6), 16) || 0;
+  return `${r} ${g} ${b}`;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -101,12 +113,26 @@ export class ThemePaletteService {
   private applyPalette(palette: ThemePalette): void {
     if (typeof document === 'undefined') return;
     const root = document.documentElement;
+
     root.style.setProperty('--liver-black', palette.black);
+    root.style.setProperty('--liver-black-rgb', hexToRgb(palette.black));
+
     root.style.setProperty('--liver-dark', palette.dark);
+    root.style.setProperty('--liver-dark-rgb', hexToRgb(palette.dark));
+
     root.style.setProperty('--liver-panel', palette.panel);
+    root.style.setProperty('--liver-panel-rgb', hexToRgb(palette.panel));
+
     root.style.setProperty('--liver-red', palette.accent);
+    root.style.setProperty('--liver-red-rgb', hexToRgb(palette.accent));
+
     root.style.setProperty('--liver-red-hover', palette.accentHover);
+    root.style.setProperty('--liver-red-hover-rgb', hexToRgb(palette.accentHover));
+
     root.style.setProperty('--liver-red-light', palette.accentLight);
+    root.style.setProperty('--liver-red-light-rgb', hexToRgb(palette.accentLight));
+
     root.style.setProperty('--liver-red-border', palette.accentBorder);
+    root.style.setProperty('--liver-red-border-rgb', hexToRgb(palette.accentBorder));
   }
 }

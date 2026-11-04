@@ -43,7 +43,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
           [class.pl-3.5]="!icon"
           [ngClass]="{
             'border-liver-red bg-liver-redLight/30 focus:border-liver-red focus:ring-liver-red/20': !!error,
-            'border-neutral-300 hover:border-liver-red/60 focus:border-liver-red focus:ring-liver-red/20': !error
+            'border-neutral-300 hover:border-liver-red focus:border-liver-red focus:ring-liver-red/20': !error
           }"
           class="w-full pr-8 py-2.5 text-sm bg-white border rounded-lg focus:outline-none focus:ring-2 text-liver-black font-medium transition-all disabled:bg-neutral-100 disabled:cursor-not-allowed"
         />

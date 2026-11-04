@@ -32,7 +32,9 @@ import { TreeNode } from '../../../core/services/api.service';
           (click)="toggleDropdown()"
           [disabled]="disabled"
           [class.border-liver-red]="isOpen"
-          class="w-full h-[42px] px-3.5 text-sm bg-white border border-neutral-300 hover:border-liver-red/60 rounded-lg flex items-center justify-between text-liver-black font-medium transition-all disabled:bg-neutral-100 disabled:cursor-not-allowed"
+          [class.ring-2]="isOpen"
+          [class.ring-liver-red/20]="isOpen"
+          class="w-full h-[42px] px-3.5 text-sm bg-white border border-neutral-300 hover:border-liver-red focus:outline-none focus:border-liver-red focus:ring-2 focus:ring-liver-red/20 rounded-lg flex items-center justify-between text-liver-black font-medium transition-all disabled:bg-neutral-100 disabled:cursor-not-allowed"
         >
           <div class="flex items-center gap-2 truncate">
             <i class="fa-solid fa-sitemap text-liver-red"></i>

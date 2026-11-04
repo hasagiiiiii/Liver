@@ -52,8 +52,12 @@ export interface SelectOption {
         <div class="relative">
           <div
             (click)="toggleDropdown()"
+            tabindex="0"
+            (keydown.enter)="toggleDropdown()"
             [class.border-liver-red]="isOpen"
-            class="h-[42px] px-3.5 bg-white border border-neutral-300 hover:border-liver-red/60 rounded-lg flex items-center justify-between gap-2 cursor-pointer transition-all"
+            [class.ring-2]="isOpen"
+            [class.ring-liver-red/20]="isOpen"
+            class="h-[42px] px-3.5 bg-white border border-neutral-300 hover:border-liver-red focus:outline-none focus:border-liver-red focus:ring-2 focus:ring-liver-red/20 rounded-lg flex items-center justify-between gap-2 cursor-pointer transition-all"
           >
             <div class="flex items-center gap-2 truncate text-xs font-semibold text-liver-black">
               @if (selectedSingleOption) {
@@ -100,7 +104,7 @@ export interface SelectOption {
                     type="text"
                     [(ngModel)]="searchQuery"
                     [placeholder]="searchPlaceholder || 'Tìm kiếm...'"
-                    class="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-neutral-300 rounded-lg focus:outline-none focus:border-liver-red focus:ring-1 focus:ring-liver-red/20"
+                    class="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-neutral-300 hover:border-liver-red rounded-lg focus:outline-none focus:border-liver-red focus:ring-1 focus:ring-liver-red/20"
                   />
                 </div>
               </div>
@@ -141,8 +145,12 @@ export interface SelectOption {
         <div class="relative">
           <div
             (click)="toggleDropdown()"
+            tabindex="0"
+            (keydown.enter)="toggleDropdown()"
             [class.border-liver-red]="isOpen"
-            class="h-[42px] px-2.5 bg-white border border-neutral-300 hover:border-liver-red/60 rounded-lg flex items-center justify-between gap-1.5 cursor-pointer transition-all overflow-hidden"
+            [class.ring-2]="isOpen"
+            [class.ring-liver-red/20]="isOpen"
+            class="h-[42px] px-2.5 bg-white border border-neutral-300 hover:border-liver-red focus:outline-none focus:border-liver-red focus:ring-2 focus:ring-liver-red/20 rounded-lg flex items-center justify-between gap-1.5 cursor-pointer transition-all overflow-hidden"
           >
             <!-- Visible Tags & +N badge -->
             <div class="flex items-center gap-1.5 flex-1 overflow-hidden whitespace-nowrap">
@@ -208,7 +216,7 @@ export interface SelectOption {
                     type="text"
                     [(ngModel)]="searchQuery"
                     placeholder="Tìm kiếm công nghệ..."
-                    class="w-full pl-8 pr-3 py-1 text-xs bg-white border border-neutral-300 rounded-lg focus:outline-none focus:border-liver-red focus:ring-1 focus:ring-liver-red/20"
+                    class="w-full pl-8 pr-3 py-1 text-xs bg-white border border-neutral-300 hover:border-liver-red rounded-lg focus:outline-none focus:border-liver-red focus:ring-1 focus:ring-liver-red/20"
                   />
                 </div>
                 <div class="flex items-center gap-2 text-xs">
@@ -257,7 +265,7 @@ export interface SelectOption {
         <div class="relative">
           <div
             (click)="focusTagInput(tagInput)"
-            class="min-h-[42px] px-2.5 py-1.5 bg-white border border-neutral-300 hover:border-liver-red/60 focus-within:border-liver-red rounded-lg flex flex-wrap items-center gap-1.5 cursor-text transition-all"
+            class="min-h-[42px] px-2.5 py-1.5 bg-white border border-neutral-300 hover:border-liver-red focus-within:border-liver-red focus-within:ring-2 focus-within:ring-liver-red/20 rounded-lg flex flex-wrap items-center gap-1.5 cursor-text transition-all"
           >
             <!-- Tags List with 3 State Types: locked, accent/critical, default -->
             @for (tag of customTags; track tag.id) {

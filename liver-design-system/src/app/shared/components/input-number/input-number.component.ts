@@ -25,7 +25,7 @@ import { CurrencyVNDPipe } from '../../pipes/currency-vnd.pipe';
         </label>
       }
 
-      <div class="flex items-center">
+      <div class="flex items-center rounded-lg transition-all focus-within:ring-2 focus-within:ring-liver-red/20">
         <button
           type="button"
           (click)="stepValue(-step)"
@@ -46,7 +46,7 @@ import { CurrencyVNDPipe } from '../../pipes/currency-vnd.pipe';
             [value]="value"
             (input)="onInputChange($event)"
             (blur)="onBlur()"
-            class="w-full h-[42px] px-3 text-center text-sm font-bold bg-white border-y border-neutral-300 hover:border-liver-red/60 focus:outline-none focus:border-liver-red focus:ring-1 focus:ring-liver-red/20 text-liver-black disabled:bg-neutral-100 disabled:cursor-not-allowed [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            class="w-full h-[42px] px-3 text-center text-sm font-bold bg-white border-y border-neutral-300 hover:border-liver-red focus:outline-none focus:border-liver-red text-liver-black disabled:bg-neutral-100 disabled:cursor-not-allowed [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           />
         </div>
 

@@ -63,7 +63,7 @@ export class TableCellDirective {
                   [(ngModel)]="searchKeyword"
                   (ngModelChange)="onSearchChange($event)"
                   [placeholder]="searchPlaceholder"
-                  class="pl-8 pr-3 py-1.5 text-xs bg-neutral-900 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-liver-red w-56 transition-colors"
+                  class="pl-8 pr-3 py-1.5 text-xs bg-neutral-900 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 hover:border-liver-red focus:outline-none focus:border-liver-red focus:ring-2 focus:ring-liver-red/20 w-56 transition-colors"
                 />
               </div>
             }
@@ -72,7 +72,7 @@ export class TableCellDirective {
               <select
                 [(ngModel)]="selectedFilter"
                 (ngModelChange)="currentPage = 1"
-                class="px-3 py-1.5 text-xs bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-liver-red transition-colors cursor-pointer"
+                class="px-3 py-1.5 text-xs bg-neutral-900 border border-neutral-700 rounded-lg text-white hover:border-liver-red focus:outline-none focus:border-liver-red focus:ring-2 focus:ring-liver-red/20 transition-colors cursor-pointer"
               >
                 @for (opt of filterOptions; track opt.value) {
                   <option [value]="opt.value">{{ opt.label }}</option>

@@ -379,20 +379,23 @@ Hệ thống hỗ trợ 5 bộ Theme Palette chuyển đổi thời gian thực:
 
 ### 3.1. Bảng ánh xạ CSS Variables sang Tailwind Utility Classes
 
-| CSS Variable | Tailwind Utility Token | Mục đích sử dụng |
-| :--- | :--- | :--- |
-| `var(--liver-red)` | `bg-liver-red`, `text-liver-red`, `border-liver-red`, `accent-liver-red` | Màu chủ đạo (Primary Accent), Nút chính, Active Tab, Checkbox |
-| `var(--liver-red-hover)` | `hover:bg-liver-redHover`, `hover:text-liver-redHover` | Màu hover cho nút chính, icon click |
-| `var(--liver-red-light)` | `bg-liver-redLight` | Nền nhạt cho tag, badge, dải chọn ngày, hover dòng bảng |
-| `var(--liver-red-border)` | `border-liver-redBorder` | Viền nhạt ăn khớp với nền nhạt cho badge, popup, dropdown hover |
-| `var(--liver-black)` | `bg-liver-black`, `text-liver-black` | Màu đen sâu tiêu chuẩn cho text chính, header |
-| `var(--liver-dark)` | `bg-liver-dark` | Màu nền Sidebar, Header bar, Footer dark |
-| `var(--liver-panel)` | `bg-liver-panel` | Màu nền card panel bề mặt |
+TailwindCSS v3 sử dụng cú pháp RGB channel `rgb(var(--liver-*-rgb) / <alpha-value>)` để hỗ trợ 100% tính năng chỉnh độ trong suốt (opacity modifier như `/20`, `/60`, `/25`) theo Theme Palette thời gian thực:
+
+| CSS Variable | RGB Variable | Tailwind Utility Token | Mục đích sử dụng |
+| :--- | :--- | :--- | :--- |
+| `var(--liver-red)` | `--liver-red-rgb` | `bg-liver-red`, `text-liver-red`, `border-liver-red`, `accent-liver-red` | Màu chủ đạo (Primary Accent), Nút chính, Active Tab, Checkbox |
+| `var(--liver-red-hover)` | `--liver-red-hover-rgb` | `hover:bg-liver-redHover`, `hover:text-liver-redHover` | Màu hover cho nút chính, icon click |
+| `var(--liver-red-light)` | `--liver-red-light-rgb` | `bg-liver-redLight` | Nền nhạt cho tag, badge, dải chọn ngày, hover dòng bảng |
+| `var(--liver-red-border)` | `--liver-red-border-rgb` | `border-liver-redBorder` | Viền nhạt ăn khớp với nền nhạt cho badge, popup, dropdown hover |
+| `var(--liver-black)` | `--liver-black-rgb` | `bg-liver-black`, `text-liver-black` | Màu đen sâu tiêu chuẩn cho text chính, header |
+| `var(--liver-dark)` | `--liver-dark-rgb` | `bg-liver-dark` | Màu nền Sidebar, Header bar, Footer dark |
+| `var(--liver-panel)` | `--liver-panel-rgb` | `bg-liver-panel` | Màu nền card panel bề mặt |
 
 ### 3.2. Quy tắc áp dụng cho Button & Input
 - **Primary Button:** `bg-liver-red hover:bg-liver-redHover text-white shadow-md shadow-liver-red/25`
 - **Secondary / Outline Button:** `border border-neutral-300 hover:border-liver-red hover:text-liver-red`
-- **Input Focus State:** `hover:border-liver-red/60 focus:border-liver-red focus:ring-2 focus:ring-liver-red/20`
+- **Input Hover & Focus State:** `hover:border-liver-red focus:border-liver-red focus:ring-2 focus:ring-liver-red/20 focus-within:border-liver-red focus-within:ring-2 focus-within:ring-liver-red/20`
+- **Dropdown Open State (Select, TreeSelect, Datepicker, DateRange):** `[class.border-liver-red]="isOpen" [class.ring-2]="isOpen" [class.ring-liver-red/20]="isOpen"`
 - **Input Error State:** `border-liver-red text-liver-red bg-liver-redLight/30`
 - **Badge / Pill Accent:** `bg-liver-redLight text-liver-red border border-liver-redBorder`
 - **Table Selected Row:** `bg-liver-redLight/40 hover:bg-liver-redLight/60`
@@ -407,8 +410,8 @@ Hệ thống hỗ trợ 5 bộ Theme Palette chuyển đổi thời gian thực:
 
 ### 3.4. Quy chuẩn Border (Đường viền của các Component)
 - Tất cả các control form, card, popup, modal đều phải phản ánh border theo Theme Palette:
-  - Khung nhập liệu ở trạng thái hover: luôn dùng `hover:border-liver-red/60` (thay vì `hover:border-liver-black` hay `hover:border-neutral-400`).
-  - Khung nhập liệu khi mở Dropdown hoặc Focus: `focus:border-liver-red` hoặc `[class.border-liver-red]="isOpen"`.
+  - Khung nhập liệu ở trạng thái hover: luôn dùng `hover:border-liver-red` (thay vì `hover:border-liver-black` hay `hover:border-neutral-400`).
+  - Khung nhập liệu khi mở Dropdown hoặc Focus: `focus:border-liver-red` hoặc `[class.border-liver-red]="isOpen"` kèm vòng hào quang `focus:ring-2 focus:ring-liver-red/20` (hoặc `[class.ring-2]="isOpen" [class.ring-liver-red/20]="isOpen"`).
   - Khung bao ngoài của Card, Table, Modal: `border border-neutral-200 hover:border-liver-redBorder/80 transition-colors`.
   - Phân trang bảng (Pagination) trang đang chọn: `border-liver-red bg-liver-red text-white shadow-md shadow-liver-red/25`.
 

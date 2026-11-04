@@ -35,7 +35,9 @@ export interface DateRangeValue {
         <!-- Input Control Wrapper with Direct Typing -->
         <div
           [class.border-liver-red]="isOpen"
-          class="h-[42px] px-3 bg-white border border-neutral-300 hover:border-liver-red/60 rounded-lg flex items-center justify-between gap-2 transition-all focus-within:border-liver-red focus-within:ring-2 focus-within:ring-liver-red/20"
+          [class.ring-2]="isOpen"
+          [class.ring-liver-red/20]="isOpen"
+          class="h-[42px] px-3 bg-white border border-neutral-300 hover:border-liver-red rounded-lg flex items-center justify-between gap-2 transition-all focus-within:border-liver-red focus-within:ring-2 focus-within:ring-liver-red/20"
           [class.bg-neutral-100]="disabled"
           [class.cursor-not-allowed]="disabled"
         >
