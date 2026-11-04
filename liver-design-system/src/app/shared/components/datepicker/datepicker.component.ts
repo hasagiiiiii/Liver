@@ -61,10 +61,12 @@ export type DatepickerView = 'date' | 'month' | 'quarter' | 'year';
               [disabled]="disabled"
               [placeholder]="computedPlaceholder"
               [value]="displayValue"
+              (focus)="openPopup()"
+              (click)="openPopup()"
               (input)="onInputTyped($event)"
               (blur)="onInputBlur($event)"
               (keydown.enter)="onInputEnter()"
-              class="w-full text-xs font-semibold text-liver-black bg-transparent focus:outline-none placeholder-neutral-400 disabled:cursor-not-allowed"
+              class="w-full text-xs font-semibold text-liver-black bg-transparent focus:outline-none placeholder-neutral-400 disabled:cursor-not-allowed cursor-pointer"
             />
           </div>
 
@@ -466,6 +468,16 @@ export class DatepickerComponent implements ControlValueAccessor, OnInit {
 
   setDisabledState?(isDisabled: boolean): void {
     this.disabled = isDisabled;
+  }
+
+  openPopup(): void {
+    if (this.disabled || this.isOpen) return;
+    this.isOpen = true;
+    this.viewMode = this.isQuarterMode ? 'quarter' : this.mode;
+    if (this.value) {
+      this.parseValueToState(this.value);
+    }
+    this.calculateCalendar();
   }
 
   togglePopup(): void {

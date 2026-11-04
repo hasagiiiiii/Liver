@@ -32,33 +32,70 @@ export interface DateRangeValue {
       }
 
       <div class="relative">
-        <button
-          type="button"
-          (click)="togglePopup()"
-          [disabled]="disabled"
+        <!-- Input Control Wrapper with Direct Typing -->
+        <div
           [class.border-liver-red]="isOpen"
-          class="w-full h-[42px] px-3.5 text-sm bg-white border border-neutral-300 hover:border-liver-red/60 focus:border-liver-red rounded-lg flex items-center justify-between text-liver-black font-medium transition-all disabled:bg-neutral-100 disabled:cursor-not-allowed"
+          class="h-[42px] px-3 bg-white border border-neutral-300 hover:border-liver-red/60 rounded-lg flex items-center justify-between gap-2 transition-all focus-within:border-liver-red focus-within:ring-2 focus-within:ring-liver-red/20"
+          [class.bg-neutral-100]="disabled"
+          [class.cursor-not-allowed]="disabled"
         >
-          <div class="flex items-center gap-2 truncate">
-            <i class="fa-solid fa-calendar-week text-liver-red"></i>
-            @if (value.startDate && value.endDate) {
-              <span class="font-semibold">{{ value.startDate | dateFormat }}</span>
-              <i class="fa-solid fa-arrow-right text-[10px] text-liver-red mx-0.5"></i>
-              <span class="font-semibold">{{ value.endDate | dateFormat }}</span>
-            } @else {
-              <span class="text-neutral-400 font-normal">{{ placeholder }}</span>
-            }
+          <!-- Left Calendar Icon & Text Input -->
+          <div class="flex items-center gap-2 flex-1 min-w-0">
+            <button
+              type="button"
+              (click)="togglePopup()"
+              [disabled]="disabled"
+              class="text-liver-red focus:outline-none flex items-center shrink-0 cursor-pointer"
+              title="Mở lịch chọn khoảng thời gian"
+            >
+              <i class="fa-solid fa-calendar-week text-xs"></i>
+            </button>
+
+            <!-- Direct Typing / Display Range Input -->
+            <input
+              #rangeInput
+              type="text"
+              [disabled]="disabled"
+              [placeholder]="placeholder"
+              [value]="displayValue"
+              (focus)="openPopup()"
+              (click)="openPopup()"
+              (input)="onInputTyped($event)"
+              (blur)="onInputBlur($event)"
+              (keydown.enter)="closePopup()"
+              class="w-full text-xs font-semibold text-liver-black bg-transparent focus:outline-none placeholder-neutral-400 disabled:cursor-not-allowed cursor-pointer"
+            />
           </div>
 
-          <div class="flex items-center gap-2 shrink-0">
+          <!-- Right Action Controls (Total Days badge, Clear, Chevron) -->
+          <div class="flex items-center gap-1.5 shrink-0">
             @if (value.startDate && value.endDate) {
               <span class="px-2 py-0.5 rounded-full bg-liver-redLight text-liver-red border border-liver-redBorder text-[10px] font-bold">
                 {{ totalDays }} ngày
               </span>
             }
-            <i class="fa-solid fa-chevron-down text-xs text-neutral-400"></i>
+            @if (clearable && (value.startDate || value.endDate) && !disabled) {
+              <button
+                type="button"
+                (click)="clear($event)"
+                class="text-neutral-400 hover:text-liver-red text-xs transition-colors p-0.5"
+                title="Xóa giá trị"
+              >
+                <i class="fa-solid fa-circle-xmark"></i>
+              </button>
+            }
+            <button
+              type="button"
+              (click)="togglePopup()"
+              [disabled]="disabled"
+              class="text-neutral-400 hover:text-liver-black text-xs transition-transform p-0.5"
+              [class.rotate-180]="isOpen"
+              title="Đóng/Mở lịch"
+            >
+              <i class="fa-solid fa-chevron-down"></i>
+            </button>
           </div>
-        </button>
+        </div>
 
         <!-- Unified Date Range Popup -->
         @if (isOpen) {
@@ -166,10 +203,11 @@ export interface DateRangeValue {
 })
 export class DateRangeComponent implements ControlValueAccessor {
   @Input() label = '';
-  @Input() placeholder = 'Chọn khoảng thời gian...';
+  @Input() placeholder = 'DD/MM/YYYY - DD/MM/YYYY (gõ hoặc chọn lịch)...';
   @Input() required = false;
   @Input() hint = '';
   @Input() disabled = false;
+  @Input() clearable = true;
 
   value: DateRangeValue = {
     startDate: '',
@@ -187,6 +225,25 @@ export class DateRangeComponent implements ControlValueAccessor {
 
   onChange: (value: DateRangeValue) => void = () => {};
   onTouched: () => void = () => {};
+
+  formatDate(dateStr: string): string {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      return `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[0]}`;
+    }
+    return dateStr;
+  }
+
+  get displayValue(): string {
+    if (this.value.startDate && this.value.endDate) {
+      return `${this.formatDate(this.value.startDate)} - ${this.formatDate(this.value.endDate)}`;
+    }
+    if (this.value.startDate) {
+      return `${this.formatDate(this.value.startDate)} - ...`;
+    }
+    return '';
+  }
 
   get totalDays(): number {
     if (!this.value.startDate || !this.value.endDate) return 0;
@@ -226,6 +283,13 @@ export class DateRangeComponent implements ControlValueAccessor {
     this.disabled = isDisabled;
   }
 
+  openPopup(): void {
+    if (this.disabled || this.isOpen) return;
+    this.isOpen = true;
+    this.selectingState = 'START';
+    this.calculateCalendar();
+  }
+
   togglePopup(): void {
     if (this.disabled) return;
     this.isOpen = !this.isOpen;
@@ -237,6 +301,51 @@ export class DateRangeComponent implements ControlValueAccessor {
 
   closePopup(): void {
     this.isOpen = false;
+  }
+
+  clear(event?: Event): void {
+    if (event) event.stopPropagation();
+    this.value = { startDate: '', endDate: '' };
+    this.selectingState = 'START';
+    this.onChange({ ...this.value });
+    this.onTouched();
+  }
+
+  onInputTyped(event: Event): void {
+    const input = (event.target as HTMLInputElement).value.trim();
+    if (!input) return;
+
+    // Matches DD/MM/YYYY - DD/MM/YYYY or DD/MM/YYYY -> DD/MM/YYYY or DD/MM/YYYY to DD/MM/YYYY
+    const match = input.match(
+      /^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})\s*(?:-|>|->|to|\s)\s*(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/i
+    );
+    if (match) {
+      const d1 = parseInt(match[1], 10), m1 = parseInt(match[2], 10), y1 = parseInt(match[3], 10);
+      const d2 = parseInt(match[4], 10), m2 = parseInt(match[5], 10), y2 = parseInt(match[6], 10);
+
+      const startDateStr = `${y1}-${String(m1).padStart(2, '0')}-${String(d1).padStart(2, '0')}`;
+      const endDateStr = `${y2}-${String(m2).padStart(2, '0')}-${String(d2).padStart(2, '0')}`;
+
+      const t1 = new Date(startDateStr).getTime();
+      const t2 = new Date(endDateStr).getTime();
+      if (!isNaN(t1) && !isNaN(t2) && t1 <= t2) {
+        this.value = { startDate: startDateStr, endDate: endDateStr };
+        this.currentYear = y2;
+        this.currentMonth = m2 - 1;
+        this.calculateCalendar();
+        this.onChange({ ...this.value });
+      }
+    }
+  }
+
+  onInputBlur(event: Event): void {
+    const inputEl = event.target as HTMLInputElement;
+    if (!inputEl.value.trim()) {
+      this.clear();
+    } else {
+      inputEl.value = this.displayValue;
+    }
+    this.onTouched();
   }
 
   changeMonth(offset: number): void {

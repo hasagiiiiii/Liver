@@ -272,6 +272,7 @@ Mọi AI khi xây dựng màn hình hoặc chức năng đều **BẮT BUỘC** 
 ### 2.6. Datepicker (`app-datepicker`)
 - **Import:** `DatepickerComponent` từ `src/app/shared/components/datepicker/datepicker.component`
 - **Tính năng cao cấp:**
+  - **Tự động mở lịch khi Focus:** Focus hoặc click vào ô input sẽ **tự động mở Calendar Popup** ngay lập tức.
   - **Gõ trực tiếp ngày:** Hỗ trợ nhập tay qua input `DD/MM/YYYY`, tự động validate & sync lịch hai chiều.
   - **Đa chế độ (Mode):** Hỗ trợ `mode="date" | "month" | "quarter" | "year"`.
   - **Điều hướng Tháng & Năm trực tiếp:** Bấm vào "Tháng XX" trên header để mở grid 12 tháng, bấm vào "Năm YYYY" để mở grid thập kỷ 12 năm.
@@ -313,8 +314,15 @@ Mọi AI khi xây dựng màn hình hoặc chức năng đều **BẮT BUỘC** 
 
 ### 2.7. Date Range Picker (`app-date-range`)
 - **Import:** `DateRangeComponent` từ `src/app/shared/components/date-range/date-range.component`
+- **Tính năng cao cấp:**
+  - **Tự động mở lịch khi Focus:** Focus hoặc click vào ô input sẽ **tự động mở Calendar Popup** ngay lập tức.
+  - **Gõ trực tiếp khoảng ngày:** Hỗ trợ nhập tay qua input `DD/MM/YYYY - DD/MM/YYYY` (hoặc `->`), tự động validate & sync lịch hai chiều.
+  - **Badge số ngày:** Tự động tính toán và hiển thị badge số ngày chênh lệch (`X ngày`).
+  - **Nút xóa nhanh:** Nút clear xóa trắng khoảng thời gian đã chọn.
+  - **Nút chọn nhanh:** Hỗ trợ preset 7N, 30N.
+  - **Tự động đóng khi click ra ngoài** nhờ `ClickOutsideDirective`.
 - **Border & Shadow Rules:**
-  - Khung trigger: `border-neutral-300 hover:border-liver-red/60` (khi mở `[class.border-liver-red]="isOpen"`)
+  - Khung input: `border-neutral-300 hover:border-liver-red/60 focus-within:border-liver-red focus-within:ring-2 focus-within:ring-liver-red/20` (khi mở `[class.border-liver-red]="isOpen"`)
   - Calendar Popup: `border border-neutral-200 hover:border-liver-redBorder/80 shadow-2xl`
   - Start/End date: `bg-liver-red text-white shadow-md shadow-liver-red/25`
   - In-between range: `bg-liver-redLight text-liver-red font-medium`
@@ -322,7 +330,9 @@ Mọi AI khi xây dựng màn hình hoặc chức năng đều **BẮT BUỘC** 
 ```html
 <app-date-range
   label="Thời gian lọc"
-  formControlName="dateRange">
+  formControlName="dateRange"
+  [clearable]="true">
+</app-date-range>
 </app-date-range>
 ```
 

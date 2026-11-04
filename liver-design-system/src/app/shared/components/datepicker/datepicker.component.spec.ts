@@ -158,4 +158,22 @@ describe('DatepickerComponent', () => {
     component.closePopup();
     expect(component.isOpen).toBe(false);
   });
+
+  it('should automatically open calendar popup when input is focused or clicked', () => {
+    expect(component.isOpen).toBe(false);
+
+    component.openPopup();
+    expect(component.isOpen).toBe(true);
+
+    // Bấm lại khi đang mở vẫn giữ trạng thái mở
+    component.openPopup();
+    expect(component.isOpen).toBe(true);
+
+    component.closePopup();
+    expect(component.isOpen).toBe(false);
+
+    const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+    input.dispatchEvent(new Event('focus'));
+    expect(component.isOpen).toBe(true);
+  });
 });
