@@ -1,0 +1,199 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" width="100%" height="100%">
+  <defs>
+    <!-- Liver Red Gradients -->
+    <linearGradient id="liverGradMain" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff4444">
+        <animate attributeName="stop-color" values="#ff4444;#dc2626;#ef4444;#ff4444" dur="4s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="50%" stop-color="#dc2626" />
+      <stop offset="100%" stop-color="#7f1d1d" />
+    </linearGradient>
+
+    <linearGradient id="liverGradStroke" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+      <stop offset="40%" stop-color="#ff6b6b" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#dc2626" stop-opacity="0.3" />
+    </linearGradient>
+
+    <linearGradient id="liverLaserGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ff8888" stop-opacity="0" />
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="1" />
+      <stop offset="100%" stop-color="#ff4444" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Neon Glow Filter -->
+    <filter id="liverNeonGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.5" result="blur1" />
+      <feGaussianBlur stdDeviation="7" result="blur2" />
+      <feMerge>
+        <feMergeNode in="blur2" />
+        <feMergeNode in="blur1" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <style>
+      .logo-bg-layer {
+        transition: transform 0.3s ease;
+      }
+      .logo-l-body {
+        filter: drop-shadow(0 4px 12px rgba(220, 38, 38, 0.45));
+        animation: pulseBody 3s ease-in-out infinite;
+      }
+      .logo-l-stroke {
+        stroke-dasharray: 260;
+        stroke-dashoffset: 260;
+        animation: drawLetterL 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards, loopStrokeGlow 4s ease-in-out infinite 2.5s;
+      }
+      .logo-laser-pulse {
+        stroke-dasharray: 40 180;
+        animation: laserRun 3s linear infinite;
+      }
+      .logo-corner-accent {
+        animation: accentBlink 2s ease-in-out infinite;
+      }
+
+      @keyframes drawLetterL {
+        0% {
+          stroke-dashoffset: 260;
+          opacity: 0;
+        }
+        30% {
+          opacity: 1;
+        }
+        100% {
+          stroke-dashoffset: 0;
+          opacity: 1;
+        }
+      }
+
+      @keyframes loopStrokeGlow {
+        0%, 100% {
+          stroke-opacity: 0.7;
+          filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.6));
+        }
+        50% {
+          stroke-opacity: 1;
+          filter: drop-shadow(0 0 8px rgba(255, 100, 100, 0.9));
+        }
+      }
+
+      @keyframes pulseBody {
+        0%, 100% {
+          transform: scale(1);
+          filter: drop-shadow(0 4px 12px rgba(220, 38, 38, 0.45));
+        }
+        50% {
+          transform: scale(1.02);
+          filter: drop-shadow(0 4px 20px rgba(220, 38, 38, 0.75));
+        }
+      }
+
+      @keyframes laserRun {
+        0% {
+          stroke-dashoffset: 220;
+        }
+        100% {
+          stroke-dashoffset: -220;
+        }
+      }
+
+      @keyframes accentBlink {
+        0%, 100% {
+          opacity: 0.4;
+          transform: scale(0.9);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.15);
+        }
+      }
+    </style>
+  </defs>
+
+  <!-- Ambient Outer Glow -->
+  <circle cx="50" cy="50" r="38" fill="url(#liverGradMain)" opacity="0.15" filter="url(#liverNeonGlow)">
+    <animate attributeName="r" values="36;40;36" dur="3s" repeatCount="indefinite" />
+    <animate attributeName="opacity" values="0.12;0.22;0.12" dur="3s" repeatCount="indefinite" />
+  </circle>
+
+  <!-- Group for Logo Geometry -->
+  <g class="logo-l-body" transform-origin="50 50">
+    <!-- Stylized Geometric Letter L Body -->
+    <!-- Path forms a sleek, modern, beveled tech letter "L" -->
+    <path
+      d="M 28 16 
+         L 46 16 
+         L 46 64 
+         L 76 64 
+         L 76 80 
+         Q 76 84 72 84 
+         L 32 84 
+         Q 28 84 28 80 
+         Z"
+      fill="url(#liverGradMain)"
+    />
+
+    <!-- Inner Shadow / Depth Slice -->
+    <path
+      d="M 28 16 
+         L 36 24 
+         L 36 76 
+         L 72 76 
+         L 76 80 
+         L 32 84 
+         Q 28 84 28 80 
+         Z"
+      fill="#0a0a0c"
+      opacity="0.35"
+    />
+
+    <!-- Diagonal Cyber Cut Highlight on top-left of L -->
+    <path
+      d="M 28 16 L 38 16 L 28 26 Z"
+      fill="#ffffff"
+      opacity="0.6"
+    />
+
+    <!-- Animated Contour Stroke -->
+    <path
+      class="logo-l-stroke"
+      d="M 28 16 
+         L 46 16 
+         L 46 64 
+         L 76 64 
+         L 76 80 
+         Q 76 84 72 84 
+         L 32 84 
+         Q 28 84 28 80 
+         Z"
+      fill="none"
+      stroke="url(#liverGradStroke)"
+      stroke-width="2.5"
+      stroke-linejoin="round"
+      stroke-linecap="round"
+    />
+
+    <!-- Laser Light Beam Traveling Along Path -->
+    <path
+      class="logo-laser-pulse"
+      d="M 28 16 
+         L 46 16 
+         L 46 64 
+         L 76 64 
+         L 76 80 
+         L 32 84 
+         L 28 80 
+         Z"
+      fill="none"
+      stroke="url(#liverLaserGrad)"
+      stroke-width="3"
+      stroke-linecap="round"
+      filter="url(#liverNeonGlow)"
+    />
+
+    <!-- Energy Tech Dots / Accents -->
+    <circle class="logo-corner-accent" cx="74" cy="74" r="2.5" fill="#ffffff" transform-origin="74 74" />
+    <circle class="logo-corner-accent" cx="37" cy="25" r="1.5" fill="#ff8888" transform-origin="37 25" />
+  </g>
+</svg>

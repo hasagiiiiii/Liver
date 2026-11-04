@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --liver-black: #0a0a0c;
+  --liver-dark: #141417;
+  --liver-panel: #1c1c21;
+  --liver-red: #dc2626;
+  --liver-red-hover: #b91c1c;
+  --liver-red-light: #fef2f2;
+  --liver-red-border: #fecaca;
+}
+
+/* Custom Scrollbar theo tone chủ đạo */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f4;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--liver-dark);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--liver-red);
+}
+
+/* Sticky Table Columns Shadow */
+.sticky-col-left {
+  position: sticky;
+  left: 0;
+  z-index: 15;
+  box-shadow: 4px 0 8px -4px rgba(0, 0, 0, 0.12);
+}
+.sticky-col-right {
+  position: sticky;
+  right: 0;
+  z-index: 15;
+  box-shadow: -4px 0 8px -4px rgba(0, 0, 0, 0.12);
+}
+.sticky-header th {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.sticky-header th.sticky-col-left,
+.sticky-header th.sticky-col-right {
+  z-index: 30;
+}
+
+/* Custom Animations */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.dropdown-animate {
+  animation: fadeInScale 0.15s ease-out forwards;
+}
+
+/* Smooth Sidebar Transitions */
+.sidebar-transition {
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hide number input spin buttons (plus/minus stepper) on hover & default */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+

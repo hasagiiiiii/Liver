@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIVER UI - Enterprise Layout & Controls</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        liver: {
+                            black: 'var(--liver-black)',
+                            dark: 'var(--liver-dark)',
+                            panel: 'var(--liver-panel)',
+                            red: 'var(--liver-red)',
+                            redHover: 'var(--liver-red-hover)',
+                            redLight: 'var(--liver-red-light)',
+                            redBorder: 'var(--liver-red-border)',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --liver-black: #0a0a0c;
+            --liver-dark: #141417;
+            --liver-panel: #1c1c21;
+            --liver-red: #dc2626;
+            --liver-red-hover: #b91c1c;
+            --liver-red-light: #fef2f2;
+            --liver-red-border: #fecaca;
+        }
+
+        /* Custom Scrollbar theo tone chủ đạo */
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f4;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--liver-dark);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--liver-red);
+        }
+
+        /* Sticky Table Columns Shadow */
+        .sticky-col-left {
+            position: sticky;
+            left: 0;
+            z-index: 15;
+            box-shadow: 4px 0 8px -4px rgba(0, 0, 0, 0.12);
+        }
+        .sticky-col-right {
+            position: sticky;
+            right: 0;
+            z-index: 15;
+            box-shadow: -4px 0 8px -4px rgba(0, 0, 0, 0.12);
+        }
+        .sticky-header th {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+
+        /* Hide number input spin buttons */
+        input[type='number']::-webkit-outer-spin-button,
+        input[type='number']::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type='number'] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+        .sticky-header th.sticky-col-left,
+        .sticky-header th.sticky-col-right {
+            z-index: 30;
+        }
+
+        /* Custom Animations */
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.97) translateY(-4px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .dropdown-animate {
+            animation: fadeInScale 0.15s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-neutral-100 text-liver-black font-sans antialiased selection:bg-liver-red selection:text-white overflow-hidden">
+
+    <!-- Toast Notification -->
+    <div id="toastContainer" class="fixed top-20 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- ==================== FLOATING THEME PALETTE SETTING (FIXED BOTTOM-RIGHT) ==================== -->
+    <div id="themeSwitcherContainer" class="fixed bottom-6 right-6 z-50">
+        <!-- Popover Menu -->
+        <div id="themePalettePopup" class="hidden dropdown-animate absolute bottom-16 right-0 w-72 bg-white rounded-2xl shadow-2xl border border-neutral-200 p-4">
+            <div class="flex items-center justify-between pb-3 mb-3 border-b border-neutral-100">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-palette text-liver-red text-sm"></i>
+                    <span class="text-xs font-extrabold uppercase tracking-wider text-liver-black">Theme Palette</span>
+                </div>
+                <button type="button" onclick="toggleThemeMenu(false)" class="w-6 h-6 rounded-md hover:bg-neutral-100 text-neutral-400 hover:text-liver-black flex items-center justify-center">
+                    <i class="fa-solid fa-xmark text-xs"></i>
+                </button>
+            </div>
+            <p class="text-[11px] text-neutral-500 mb-3">Chọn bảng màu chủ đạo cho hệ thống LIVER:</p>
+            <div id="paletteOptionsList" class="space-y-2">
+                <!-- Rendered via JS -->
+            </div>
+        </div>
+
+        <!-- Floating Setting Trigger Button -->
+        <button type="button" onclick="toggleThemeMenu()" title="Cấu hình Theme Palette"
+            class="w-12 h-12 rounded-full bg-liver-black hover:bg-liver-red text-white shadow-2xl border-2 border-white flex items-center justify-center transition-all duration-300 hover:scale-105 group">
+            <i class="fa-solid fa-gear text-lg group-hover:rotate-90 transition-transform duration-300"></i>
+        </button>
+    </div>
+
+    <div class="flex h-screen w-screen overflow-hidden relative">
+        <!-- Fixed Sidebar Toggle Button (Chevron Left / Right) -->
+        <button id="sidebarToggleBtn" type="button" onclick="toggleSidebar()"
+            class="fixed top-5 left-[244px] z-50 w-6 h-6 rounded-full bg-liver-black hover:bg-liver-red text-white flex items-center justify-center shadow-lg border border-neutral-700 transition-all duration-300 text-xs hover:scale-110 cursor-pointer"
+            title="Thu gọn / Mở rộng Sidebar">
+            <i id="sidebarToggleIcon" class="fa-solid fa-chevron-left text-[10px]"></i>
+        </button>
+        
+        <!-- ==================== SIDEBAR (BLACK & RED THEME) ==================== -->
+        <aside id="sidebar" class="w-64 bg-liver-black text-white flex flex-col justify-between transition-all duration-300 ease-in-out z-40 shrink-0 border-r border-neutral-800 select-none">
+            <!-- Brand Logo LIVER -->
+            <div>
+                <div class="h-16 flex items-center justify-between px-5 border-b border-neutral-800/80 bg-liver-dark">
+                    <a href="#" class="flex items-center gap-3 group">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-liver-dark via-neutral-900 to-black flex items-center justify-center shadow-lg shadow-red-950/40 group-hover:scale-105 transition-transform border border-neutral-700/60 p-1.5 shrink-0">
+                            <!-- Custom Animated SVG Letter L Logo for LIVER -->
+                            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                                <defs>
+                                    <linearGradient id="protoGradMain" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#ff4d4d" />
+                                        <stop offset="60%" stop-color="#dc2626" />
+                                        <stop offset="100%" stop-color="#7f1d1d" />
+                                    </linearGradient>
+                                    <linearGradient id="protoGradStroke" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+                                        <stop offset="45%" stop-color="#ff7b7b" stop-opacity="0.75" />
+                                        <stop offset="100%" stop-color="#dc2626" stop-opacity="0.3" />
+                                    </linearGradient>
+                                </defs>
+                                <path d="M 28 16 L 46 16 L 46 64 L 76 64 L 76 80 Q 76 84 72 84 L 32 84 Q 28 84 28 80 Z" fill="url(#protoGradMain)" />
+                                <path d="M 28 16 L 36 24 L 36 76 L 72 76 L 76 80 L 32 84 Q 28 84 28 80 Z" fill="#0a0a0c" opacity="0.35" />
+                                <path d="M 28 16 L 38 16 L 28 26 Z" fill="#ffffff" opacity="0.65" />
+                                <path d="M 28 16 L 46 16 L 46 64 L 76 64 L 76 80 Q 76 84 72 84 L 32 84 Q 28 84 28 80 Z" fill="none" stroke="url(#protoGradStroke)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />
+                                <circle cx="74" cy="74" r="2.5" fill="#ffffff" />
+                            </svg>
+                        </div>
+                        <div class="sidebar-text">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xl font-extrabold tracking-wider text-white">LIVER</span>
+                                <span class="text-[10px] font-bold bg-liver-red text-white px-1.5 py-0.5 rounded uppercase">PRO</span>
+                            </div>
+                            <p class="text-[10px] text-neutral-400 tracking-widest uppercase">Design System</p>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Navigation Menu -->
+                <div class="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-140px)]">
+                    <p class="px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-neutral-500 sidebar-text">Main Navigation</p>
+                    
+                    <a href="#" class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg bg-liver-red text-white font-medium shadow-md shadow-red-600/20 transition-all">
+                        <i class="fa-solid fa-layer-group w-5 text-center"></i>
+                        <span class="sidebar-text text-sm">UI Controls & Form</span>
+                    </a>
+
+                    <a href="#tableSection" class="flex items-center justify-between px-3.5 py-2.5 rounded-lg text-neutral-400 hover:bg-neutral-900 hover:text-white transition-all group">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-table-Columns w-5 text-center group-hover:text-liver-red transition-colors"></i>
+                            <span class="sidebar-text text-sm">Sticky & Sort Table</span>
+                        </div>
+                        <span class="sidebar-text text-[10px] font-bold px-2 py-0.5 rounded-full bg-neutral-800 text-red-400 border border-red-900/50">Hot</span>
+                    </a>
+
+                    <!-- Submenu Item -->
+                    <div>
+                        <button onclick="toggleSubmenu()" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-neutral-400 hover:bg-neutral-900 hover:text-white transition-all group">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-folder-tree w-5 text-center group-hover:text-liver-red transition-colors"></i>
+                                <span class="sidebar-text text-sm">Components</span>
+                            </div>
+                            <i id="submenuIcon" class="fa-solid fa-chevron-down text-xs transition-transform duration-200 sidebar-text rotate-180"></i>
+                        </button>
+                        <div id="submenuList" class="mt-1 ml-4 pl-4 border-l border-neutral-800 space-y-1 sidebar-text">
+                            <a href="#selectSection" class="block px-3 py-1.5 rounded-md text-xs text-neutral-300 hover:text-liver-red transition-colors">• ng-Select & Multi</a>
+                            <a href="#selectSection" class="block px-3 py-1.5 rounded-md text-xs text-neutral-300 hover:text-liver-red transition-colors">• Tree-Select</a>
+                            <a href="#dateSection" class="block px-3 py-1.5 rounded-md text-xs text-neutral-300 hover:text-liver-red transition-colors">• Date & Date-Range</a>
+                        </div>
+                    </div>
+
+                    <a href="#" class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-neutral-400 hover:bg-neutral-900 hover:text-white transition-all group">
+                        <i class="fa-solid fa-chart-pie w-5 text-center group-hover:text-liver-red transition-colors"></i>
+                        <span class="sidebar-text text-sm">Analytics Report</span>
+                    </a>
+
+                    <a href="#" class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-neutral-400 hover:bg-neutral-900 hover:text-white transition-all group">
+                        <i class="fa-solid fa-shield-halved w-5 text-center group-hover:text-liver-red transition-colors"></i>
+                        <span class="sidebar-text text-sm">Security & Role</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Sidebar Footer / Copyright Info -->
+            <div class="p-3 border-t border-neutral-800 bg-liver-dark sidebar-text">
+                <div class="p-3 rounded-lg bg-gradient-to-r from-neutral-900 via-neutral-900 to-red-950/40 border border-neutral-800">
+                    <div class="flex items-center gap-2 text-xs font-semibold text-white mb-1">
+                        <span class="w-2 h-2 rounded-full bg-liver-red animate-pulse"></span>
+                        <span>LIVER SYSTEM v2.4</span>
+                    </div>
+                    <p class="text-[11px] text-neutral-400 truncate" title="copy by dvant24102003@gmail.com">
+                        copy by <span class="text-red-400 font-medium">dvant24102003@gmail.com</span>
+                    </p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ==================== MAIN CONTENT WRAPPER ==================== -->
+        <div class="flex-1 flex flex-col h-screen overflow-hidden">
+
+            <!-- ==================== HEADER (WITH INTEGRATED BREADCRUMB) ==================== -->
+            <header class="h-16 bg-white border-b border-neutral-200 px-4 lg:px-8 flex items-center justify-between shrink-0 z-30 shadow-sm">
+                <!-- Left Header: Breadcrumb -->
+                <div class="flex items-center gap-4">
+                    <!-- Breadcrumb -->
+                    <nav aria-label="Breadcrumb" class="flex items-center text-xs font-medium">
+                        <ol class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                            <li>
+                                <a href="#" class="text-neutral-500 hover:text-liver-red flex items-center gap-1.5 transition-colors">
+                                    <i class="fa-solid fa-house text-liver-red"></i>
+                                    <span class="hidden sm:inline">Trang chủ</span>
+                                </a>
+                            </li>
+                            <li class="text-neutral-300">/</li>
+                            <li class="hidden md:block">
+                                <a href="#" class="text-neutral-500 hover:text-liver-red transition-colors">LIVER System</a>
+                            </li>
+                            <li class="hidden md:block text-neutral-300">/</li>
+                            <li class="hidden sm:block">
+                                <a href="#" class="text-neutral-500 hover:text-liver-red transition-colors">UI Components</a>
+                            </li>
+                            <li class="hidden sm:block text-neutral-300">/</li>
+                            <li class="text-liver-black font-bold bg-liver-redLight text-liver-red px-2.5 py-1 rounded-md border border-liver-redBorder">
+                                Form Controls & Data Table
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
+
+                <!-- Right Header: Quick Search, Actions & Profile -->
+                <div class="flex items-center gap-3">
+                    <!-- Reset Form Demo Button -->
+                    <button onclick="resetAllControls()" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-300 text-xs font-semibold text-liver-black hover:border-liver-red hover:text-liver-red transition-colors">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        <span>Reset Controls</span>
+                    </button>
+
+                    <!-- Notification Bell -->
+                    <button class="relative w-9 h-9 rounded-lg border border-neutral-200 hover:border-liver-red text-liver-black hover:text-liver-red flex items-center justify-center transition-colors">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-liver-red text-white text-[10px] font-bold flex items-center justify-center">3</span>
+                    </button>
+
+                    <!-- User Profile -->
+                    <div class="flex items-center gap-2.5 pl-2 border-l border-neutral-200">
+                        <div class="w-9 h-9 rounded-lg bg-liver-black text-white font-bold text-xs flex items-center justify-center border-2 border-liver-red">
+                            DV
+                        </div>
+                        <div class="hidden xl:block text-left">
+                            <p class="text-xs font-bold text-liver-black leading-none">Dvant Admin</p>
+                            <p class="text-[11px] text-liver-red font-medium mt-0.5">dvant24102003@gmail.com</p>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ==================== MAIN SCROLLABLE CONTENT ==================== -->
+            <main class="flex-1 overflow-y-auto p-4 lg:p-8 space-y-6">
+
+                <!-- Hero Banner -->
+                <div class="bg-gradient-to-r from-liver-black via-neutral-900 to-red-950 rounded-xl p-6 text-white shadow-lg border border-neutral-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-red-600/20 border border-red-500/40 text-red-400 text-xs font-semibold mb-2">
+                            <i class="fa-solid fa-bolt"></i> LIVER ENTERPRISE COMPONENT LIBRARY
+                        </div>
+                        <h1 class="text-xl lg:text-2xl font-extrabold tracking-tight">Bộ Control Chuẩn Doanh Nghiệp & Bảng Dữ Liệu</h1>
+                        <p class="text-xs lg:text-sm text-neutral-300 mt-1">
+                            Tích hợp Input, Input Number, Datepicker, Date-Range, ng-Select, Tree-Select, Text-Area và Sticky Sortable Table.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button onclick="submitFormValues()" class="px-4 py-2.5 rounded-lg bg-liver-red hover:bg-liver-redHover text-white font-semibold text-xs shadow-lg shadow-red-600/30 transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>Kiểm tra Dữ liệu Form</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ==================== SECTION 1: FORM CONTROLS ==================== -->
+                <div class="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-visible">
+                    <!-- Section Header -->
+                    <div class="px-6 py-4 bg-liver-black text-white rounded-t-xl flex items-center justify-between border-b-2 border-liver-red">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-7 h-7 rounded-md bg-liver-red flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-sliders"></i>
+                            </span>
+                            <div>
+                                <h2 class="text-sm font-bold uppercase tracking-wider">1. Hệ Thống Form Controls (Inputs, Select & Date)</h2>
+                            </div>
+                        </div>
+                        <span class="text-[11px] text-neutral-400">Tất cả control đều hỗ trợ tương tác trực tiếp</span>
+                    </div>
+
+                    <!-- Controls Grid -->
+                    <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                        <!-- 1. STANDARD INPUT -->
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-liver-black">
+                                1. Text Input <span class="text-liver-red">*</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-neutral-400">
+                                    <i class="fa-regular fa-user text-xs"></i>
+                                </span>
+                                <input id="ctrlTextInput" type="text" value="LIVER Enterprise Project" placeholder="Nhập tên dự án hoặc mã..."
+                                    class="w-full pl-9 pr-8 py-2.5 text-sm bg-white border border-neutral-300 rounded-lg focus:outline-none focus:border-liver-red focus:ring-2 focus:ring-red-500/20 text-liver-black font-medium transition-all" />
+                                <button onclick="document.getElementById('ctrlTextInput').value=''; document.getElementById('ctrlTextInput').focus();" 
+                                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-400 hover:text-liver-red" title="Xóa nhanh">
+                                    <i class="fa-solid fa-circle-xmark text-xs"></i>
+                                </button>
+                            </div>
+                            <p class="text-[11px] text-neutral-500">Hỗ trợ icon trái và nút xóa nhanh bên phải.</p>
+                        </div>
+
+                        <!-- 2. INPUT NUMBER -->
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-liver-black">
+                                2. Input Number (Min: 0 - Step: 500,000) <span class="text-liver-red">*</span>
+                            </label>
+                            <div class="flex items-center">
+                                <button type="button" onclick="stepNumber(-500000)"
+                                    class="h-[42px] px-3.5 bg-liver-black hover:bg-liver-red text-white rounded-l-lg transition-colors flex items-center justify-center font-bold">
+                                    <i class="fa-solid fa-minus text-xs"></i>
+                                </button>
+                                <div class="relative flex-1">
+                                    <input id="ctrlNumberInput" type="number" value="15500000" min="0" step="500000"
+                                        oninput="updateFormattedNumber()"
+                                        class="w-full h-[42px] px-3 text-center text-sm font-bold bg-white border-y border-neutral-300 focus:outline-none focus:border-liver-red text-liver-black" />
+                                </div>
+                                <button type="button" onclick="stepNumber(500000)"
+                                    class="h-[42px] px-3.5 bg-liver-black hover:bg-liver-red text-white rounded-r-lg transition-colors flex items-center justify-center font-bold">
+                                    <i class="fa-solid fa-plus text-xs"></i>
+                                </button>
+                            </div>
+                            <div class="flex justify-between text-[11px]">
+                                <span class="text-neutral-500">Định dạng tiền tệ:</span>
+                                <span id="formattedNumberPreview" class="font-bold text-liver-red">15.500.000 ₫</span>
+                            </div>
+                        </div>
+
+                        <!-- 3. DATEPICKER (Single Date) -->
+                        <div id="dateSection" class="space-y-1.5 relative">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-liver-black">
+                                3. Datepicker (Chọn ngày) <span class="text-liver-red">*</span>
+                            </label>
+                            <div class="relative">
+                                <button type="button" onclick="toggleDatepickerPopup()"
+                                    class="w-full h-[42px] px-3.5 text-sm bg-white border border-neutral-300 hover:border-liver-black focus:border-liver-red rounded-lg flex items-center justify-between text-liver-black font-medium transition-all">
+                                    <span id="singleDateDisplay" class="flex items-center gap-2">
+                                        <i class="fa-regular fa-calendar-check text-liver-red"></i>
+                                        <span>24/10/2026</span>
+                                    </span>
+                                    <i class="fa-solid fa-chevron-down text-xs text-neutral-400"></i>
+                                </button>
+
+                                <!-- Custom Calendar Popup -->
+                                <div id="singleDatePopup" class="hidden dropdown-animate absolute left-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-neutral-200 z-50 p-4">
+                                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-neutral-100">
+                                        <button type="button" onclick="changeSingleMonth(-1)" class="w-7 h-7 rounded-lg hover:bg-neutral-100 flex items-center justify-center text-liver-black">
+                                            <i class="fa-solid fa-chevron-left text-xs"></i>
+                                        </button>
+                                        <span id="singleCalendarTitle" class="text-xs font-extrabold uppercase tracking-wider text-liver-black">Tháng 10, 2026</span>
+                                        <button type="button" onclick="changeSingleMonth(1)" class="w-7 h-7 rounded-lg hover:bg-neutral-100 flex items-center justify-center text-liver-black">
+                                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                                        </button>
+                                    </div>
+                                    <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-neutral-400 mb-1">
+                                        <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span class="text-liver-red">CN</span>
+                                    </div>
+                                    <div id="singleCalendarDays" class="grid grid-cols-7 gap-1 text-center text-xs"></div>
+                                    <div class="mt-3 pt-2 border-t border-neutral-100 flex justify-between">
+                                        <button type="button" onclick="selectTodaySingle()" class="text-xs font-bold text-liver-red hover:underline">Hôm nay</button>
+                                        <button type="button" onclick="toggleDatepickerPopup(false)" class="text-xs font-semibold text-neutral-500 hover:text-liver-black">Đóng</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-[11px] text-neutral-500">Custom Calendar Popup chuẩn tone Đen - Đỏ.</p>
+                        </div>
+
+                        <!-- 4. DATE-RANGE PICKER -->
+                        <div class="space-y-1.5 relative" id="dateRangeSection">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-liver-black">
+                                4. Date-Range (Khoảng thời gian) <span class="text-liver-red">*</span>
+                            </label>
+                            <div class="relative">
+                                <button type="button" onclick="toggleDateRangePopup()"
+                                    class="w-full h-[42px] px-3.5 text-sm bg-white border border-neutral-300 hover:border-liver-black rounded-lg flex items-center justify-between text-liver-black font-medium transition-all">
+                                    <div class="flex items-center gap-2 truncate">
+                                        <i class="fa-solid fa-calendar-week text-liver-red"></i>
+                                        <span id="rangeStartDisplay" class="font-semibold">01/10/2026</span>
+                                        <i class="fa-solid fa-arrow-right text-[10px] text-liver-red mx-0.5"></i>
+                                        <span id="rangeEndDisplay" class="font-semibold">24/10/2026</span>
+                                    </div>
+                                    <span id="rangeDaysBadge" class="text-[10px] font-bold bg-red-50 text-liver-red px-2 py-0.5 rounded border border-red-200 shrink-0">24 ngày</span>
+                                </button>
+
+                                <!-- Unified Date Range Popup (Grid Calendar View like Single Datepicker) -->
+                                <div id="dateRangePopup" class="hidden dropdown-animate absolute left-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-neutral-200 z-50 p-4">
+                                    <!-- Header mode & quick select -->
+                                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-neutral-100">
+                                        <div class="flex items-center gap-1.5 text-xs font-bold text-liver-black">
+                                            <span id="rangeSelectModeLabel" class="px-2 py-0.5 rounded bg-liver-red text-white text-[10px] uppercase">Chọn Từ Ngày</span>
+                                            <span id="rangeActivePreview" class="text-[11px] text-neutral-600 font-semibold">01/10/2026</span>
+                                        </div>
+                                        <div class="flex gap-1">
+                                            <button type="button" onclick="setQuickRange(7)" class="text-[10px] font-bold px-2 py-1 rounded bg-neutral-100 hover:bg-liver-black hover:text-white transition-colors">7 ngày</button>
+                                            <button type="button" onclick="setQuickRange(30)" class="text-[10px] font-bold px-2 py-1 rounded bg-neutral-100 hover:bg-liver-black hover:text-white transition-colors">30 ngày</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Month navigation -->
+                                    <div class="flex items-center justify-between pb-2 mb-2 border-b border-neutral-100">
+                                        <button type="button" onclick="changeRangeMonth(-1)" class="w-7 h-7 rounded-lg hover:bg-neutral-100 flex items-center justify-center text-liver-black">
+                                            <i class="fa-solid fa-chevron-left text-xs"></i>
+                                        </button>
+                                        <span id="rangeCalendarTitle" class="text-xs font-extrabold uppercase tracking-wider text-liver-black">Tháng 10, 2026</span>
+                                        <button type="button" onclick="changeRangeMonth(1)" class="w-7 h-7 rounded-lg hover:bg-neutral-100 flex items-center justify-center text-liver-black">
+                                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-neutral-400 mb-1">
+                                        <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span class="text-liver-red">CN</span>
+                                    </div>
+                                    <div id="rangeCalendarDays" class="grid grid-cols-7 gap-1 text-center text-xs"></div>
+
+                                    <div class="mt-3 pt-2 border-t border-neutral-100 flex items-center justify-between text-xs">
+                                        <span id="rangeHelperNote" class="text-[11px] text-neutral-500 italic">Bấm chọn ngày bắt đầu</span>
+                                        <button type="button" onclick="toggleDateRangePopup(false)" class="px-3 py-1.5 rounded-lg bg-liver-red text-white font-bold hover:bg-liver-redHover">Xác nhận</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-[11px] text-neutral-500">Lịch chọn khoảng thời gian đồng bộ giao diện với Datepicker.</p>
+                        </div>
+
+                        <!-- 5. TREE-SELECT (Hierarchical Expandable Tree) -->
+                        <div class="space-y-1.5 relative">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-liver-black">
+                                5. Tree-Select (Phân cấp phòng ban) <span class="text-liver-red">*</span>
+                            </label>
+                            <div class="relative" id="treeSelectContainer">
+                                <button type="button" onclick="toggleTreeSelectDropdown()"
+                                    class="w-full min-h-[42px] px-3.5 py-2 text-sm bg-white border border-neutral-300 hover:border-liver-black rounded-lg flex items-center justify-between text-liver-black font-medium transition-all">
+                                    <span class="flex items-center gap-2 truncate">
+                                        <i class="fa-solid fa-sitemap text-liver-red text-xs"></i>
+                                        <span id="treeSelectDisplay" class="truncate text-xs font-semibold">Khối Công Nghệ > Đội Frontend Angular</span>
+                                    </span>
+                                    <i class="fa-solid fa-chevron-down text-xs text-neutral-400 shrink-0"></i>
+                                </button>
+
+                                <!-- Tree Select Dropdown -->
+                                <div id="treeSelectDropdown" class="hidden dropdown-animate absolute left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-neutral-200 z-50 p-3 max-h-64 overflow-y-auto">
+                                    <div class="text-[11px] font-bold text-neutral-400 uppercase px-2 pb-2 border-b border-neutral-100 flex justify-between">
+                                        <span>Cây đơn vị LIVER Corp</span>
+                                        <button type="button" onclick="expandAllTree()" class="text-liver-red hover:underline">Mở rộng tất cả</button>
+                                    </div>
+                                    <div id="treeNodesContainer" class="mt-2 space-y-1 text-xs">
+                                        <!-- Rendered via JS -->
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-[11px] text-neutral-500">Hỗ trợ đóng/mở nhánh cha-con và chọn node bất kỳ.</p>
+                        </div>
+
+                        <!-- 6. SELECT - SINGLE SELECT (ng-select Single Mode) -->
+                        <div id="selectSection" class="space-y-1.5 relative">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-liver-black">
+                                6. Select - Single Select (Chọn 1 mục) <span class="text-liver-red">*</span>
+                            </label>
+                            <div class="relative" id="ngSingleSelectContainer">
+                                <div onclick="toggleNgSingleDropdown()"
+                                    class="h-[42px] px-3.5 bg-white border border-neutral-300 hover:border-liver-black rounded-lg flex items-center justify-between gap-2 cursor-pointer transition-all">
+                                    <div id="ngSingleDisplay" class="flex items-center gap-2 truncate text-xs font-semibold text-liver-black">
+                                        <!-- Rendered via JS -->
+                                    </div>
+                                    <div class="flex items-center gap-1.5 shrink-0">
+                                        <button id="ngSingleClearBtn" type="button" onclick="clearNgSingleSelect(event)" class="text-neutral-400 hover:text-liver-red text-xs" title="Bỏ chọn">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                        <span class="text-neutral-300">|</span>
+                                        <i class="fa-solid fa-chevron-down text-xs text-neutral-500"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Single Select Dropdown -->
+                                <div id="ngSingleDropdown" class="hidden dropdown-animate absolute left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-neutral-200 z-50 overflow-hidden">
+                                    <div class="p-2 border-b border-neutral-100 bg-neutral-50">
+                                        <div class="relative">
+                                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-neutral-400"></i>
+                                            <input id="ngSingleSearch" type="text" oninput="renderNgSingleOptions()" placeholder="Tìm người phê duyệt..."
+                                                class="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-neutral-300 rounded-lg focus:outline-none focus:border-liver-red" />
+                                        </div>
+                                    </div>
+                                    <ul id="ngSingleOptionsList" class="max-h-48 overflow-y-auto divide-y divide-neutral-100 text-xs">
+                                        <!-- Rendered via JS -->
+                                    </ul>
+                                </div>
+                            </div>
+                            <p class="text-[11px] text-neutral-500">Case <code class="text-liver-red font-semibold">Single Select</code>: Chọn 1 giá trị, tìm kiếm & tự đóng.</p>
+                        </div>
+
+                        <!-- 7. SELECT - MULTIPLE SELECT WITH OVERFLOW (+N TAG) -->
+                        <div class="space-y-1.5 relative">
+                            <div class="flex items-center justify-between">
+                                <label class="block text-xs font-bold uppercase tracking-wider text-liver-black">
+                                    7. Select - Multiple (Tràn ô hiện <span class="text-liver-red">+N</span> Tag) <span class="text-liver-red">*</span>
+                                </label>
+                                <span id="ngMultiTotalBadge" class="text-[10px] font-bold text-liver-red bg-liver-redLight px-1.5 py-0.5 rounded border border-liver-redBorder">Đã chọn: 5</span>
+                            </div>
+                            <div class="relative" id="ngSelectContainer">
+                                <!-- Fixed 1-line Select Box that collapses overflowing tags into +N -->
+                                <div id="ngMultiBox" onclick="toggleNgSelectDropdown()"
+                                    class="h-[42px] px-2.5 bg-white border border-neutral-300 hover:border-liver-black rounded-lg flex items-center justify-between gap-1.5 cursor-pointer transition-all overflow-hidden">
+                                    <div id="ngSelectTags" class="flex items-center gap-1.5 flex-1 overflow-hidden whitespace-nowrap">
+                                        <!-- Rendered via JS with dynamic width measurement -->
+                                    </div>
+                                    <div class="flex items-center gap-1.5 pl-1 shrink-0 bg-white">
+                                        <button type="button" onclick="clearNgSelect(event)" class="text-neutral-400 hover:text-liver-red text-xs" title="Xóa tất cả">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                        <span class="text-neutral-300">|</span>
+                                        <i class="fa-solid fa-chevron-down text-xs text-neutral-500"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Hidden measurement container for accurate tag widths -->
+                                <div id="ngSelectMeasureBox" class="fixed -top-96 left-0 invisible pointer-events-none flex items-center gap-1.5 whitespace-nowrap"></div>
+
+                                <!-- ng-Select Multi Dropdown Menu -->
+                                <div id="ngSelectDropdown" class="hidden dropdown-animate absolute left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-neutral-200 z-50 overflow-hidden">
+                                    <div class="p-2 border-b border-neutral-100 bg-neutral-50 space-y-2">
+                                        <div class="relative">
+                                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-neutral-400"></i>
+                                            <input id="ngSelectSearch" type="text" oninput="renderNgSelectOptions()" placeholder="Tìm kiếm công nghệ (Multi-select)..."
+                                                class="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-neutral-300 rounded-lg focus:outline-none focus:border-liver-red" />
+                                        </div>
+                                        <div class="flex items-center justify-between px-1 text-[11px]">
+                                            <button type="button" onclick="selectAllNgMulti(event)" class="font-bold text-liver-red hover:underline">Chọn tất cả (6)</button>
+                                            <button type="button" onclick="clearNgSelect(event)" class="font-semibold text-neutral-500 hover:text-liver-black">Bỏ chọn hết</button>
+                                        </div>
+                                    </div>
+                                    <ul id="ngSelectOptionsList" class="max-h-48 overflow-y-auto divide-y divide-neutral-100 text-xs">
+                                        <!-- Rendered via JS -->
+                                    </ul>
+                                </div>
+                            </div>
+                            <p class="text-[11px] text-neutral-500">Khi các tag vượt quá chiều rộng ô select sẽ tự gom thành badge <code class="text-liver-red font-bold">+N</code>.</p>
+                        </div>
+
+                        <!-- 8. SELECT - TAG SELECT (ADD CUSTOM TAGS & TAG STATES) -->
+                        <div class="space-y-1.5 relative md:col-span-2 lg:col-span-2">
+                            <div class="flex items-center justify-between">
+                                <label class="block text-xs font-bold uppercase tracking-wider text-liver-black">
+                                    8. Select - Tagging Mode (<code class="text-liver-red">[addTag]="true"</code> - Tạo Tag mới & Các trạng thái Tag)
+                                </label>
+                                <span class="text-[10px] text-neutral-500">Gõ từ khóa và nhấn <b>Enter</b> để thêm Tag</span>
+                            </div>
+                            <div class="relative" id="ngTagSelectContainer">
+                                <div onclick="focusTagInput()"
+                                    class="min-h-[42px] px-2.5 py-1.5 bg-white border border-neutral-300 hover:border-liver-black focus-within:border-liver-red rounded-lg flex flex-wrap items-center gap-1.5 cursor-text transition-all">
+                                    <div id="customTagsList" class="flex flex-wrap items-center gap-1.5">
+                                        <!-- Rendered via JS -->
+                                    </div>
+                                    <input id="customTagInput" type="text"
+                                        onfocus="toggleTagDropdown(true)"
+                                        oninput="renderTagSuggestions()"
+                                        onkeydown="handleCustomTagKeydown(event)"
+                                        placeholder="+ Nhập tên tag mới rồi nhấn Enter..."
+                                        class="flex-1 min-w-[180px] text-xs font-medium text-liver-black bg-transparent focus:outline-none py-1" />
+                                </div>
+
+                                <!-- Tag Suggestions & Quick Create Dropdown -->
+                                <div id="ngTagDropdown" class="hidden dropdown-animate absolute left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-neutral-200 z-50 overflow-hidden">
+                                    <div class="px-3 py-2 bg-neutral-50 border-b border-neutral-100 flex items-center justify-between text-[11px]">
+                                        <span class="font-bold text-neutral-500 uppercase">Tag gợi ý hoặc tạo mới</span>
+                                        <span class="text-neutral-400">Hỗ trợ Tag Default / Critical / Locked</span>
+                                    </div>
+                                    <ul id="ngTagSuggestionsList" class="max-h-44 overflow-y-auto divide-y divide-neutral-100 text-xs">
+                                        <!-- Rendered via JS -->
+                                    </ul>
+                                </div>
+                            </div>
+                            <p class="text-[11px] text-neutral-500">Minh họa đầy đủ: Tag mặc định, Tag ưu tiên đỏ, Tag cố định (Locked) và tạo Tag tự do.</p>
+                        </div>
+
+                        <!-- 9. TEXT-AREA (Full Width across 3 columns) -->
+                        <div class="md:col-span-2 lg:col-span-3 space-y-1.5">
+                            <div class="flex items-center justify-between">
+                                <label class="block text-xs font-bold uppercase tracking-wider text-liver-black">
+                                    9. Text-Area (Ghi chú & Mô tả hệ thống)
+                                </label>
+                                <span id="charCountDisplay" class="text-[11px] font-semibold text-neutral-500">118 / 500 ký tự</span>
+                            </div>
+                            <textarea id="ctrlTextarea" rows="3" maxlength="500" oninput="updateCharCount()"
+                                placeholder="Nhập nội dung ghi chú chi tiết..."
+                                class="w-full p-3.5 text-sm bg-white border border-neutral-300 rounded-lg focus:outline-none focus:border-liver-red focus:ring-2 focus:ring-red-500/20 text-liver-black font-medium transition-all">Giao diện quản trị LIVER thiết kế với tone màu Đen - Đỏ - Trắng chủ đạo. Bản quyền thuộc về dvant24102003@gmail.com.</textarea>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ==================== SECTION 2: DATA TABLE (STICKY + SORT) ==================== -->
+                <div id="tableSection" class="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">
+                    <!-- Table Header Controls -->
+                    <div class="p-5 bg-liver-black text-white border-b-2 border-liver-red flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-lg bg-liver-red flex items-center justify-center text-sm shadow">
+                                <i class="fa-solid fa-table"></i>
+                            </span>
+                            <div>
+                                <h2 class="text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+                                    <span>2. Data Table (Sticky Header, Sticky Columns & Multi-Sort)</span>
+                                    <span class="text-[10px] bg-red-600/30 border border-red-500 text-red-300 px-2 py-0.5 rounded-full">Interactive</span>
+                                </h2>
+                                <p class="text-xs text-neutral-400 mt-0.5">Cuộn ngang/dọc để trải nghiệm cố định cột Trái/Phải & Header; bấm tiêu đề cột để Sort.</p>
+                            </div>
+                        </div>
+
+                        <!-- Table Search & Filter -->
+                        <div class="flex flex-wrap items-center gap-2.5">
+                            <div class="relative">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-neutral-400"></i>
+                                <input id="tableSearchInput" type="text" oninput="filterAndRenderTable()" placeholder="Tìm mã, tên nhân sự, phòng ban..."
+                                    class="pl-8 pr-3 py-1.5 text-xs bg-neutral-900 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-liver-red w-56" />
+                            </div>
+
+                            <select id="tableStatusFilter" onchange="filterAndRenderTable()"
+                                class="px-3 py-1.5 text-xs bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-liver-red">
+                                <option value="ALL">Tất cả trạng thái</option>
+                                <option value="Active">Active (Đang chạy)</option>
+                                <option value="Pending">Pending (Chờ duyệt)</option>
+                                <option value="Critical">Critical (Khẩn cấp)</option>
+                            </select>
+
+                            <button onclick="addNewDemoRow()" class="px-3 py-1.5 rounded-lg bg-liver-red hover:bg-liver-redHover text-white text-xs font-bold transition-colors flex items-center gap-1.5">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>Thêm dòng</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Scrollable Table Viewport (Demonstrates Sticky Header + Sticky Left/Right Columns) -->
+                    <div class="overflow-x-auto overflow-y-auto max-h-[380px] relative">
+                        <table class="w-full min-w-[1100px] text-left border-collapse">
+                            <thead class="sticky-header bg-neutral-900 text-white text-[11px] uppercase tracking-wider select-none">
+                                <tr>
+                                    <!-- Sticky Left Column: Checkbox + Code -->
+                                    <th onclick="sortTable('code')" class="sticky-col-left bg-neutral-900 py-3.5 px-4 border-b border-neutral-800 cursor-pointer hover:text-red-400 transition-colors w-40">
+                                        <div class="flex items-center justify-between">
+                                            <span>Mã Dự Án (Sticky L)</span>
+                                            <i id="sortIcon-code" class="fa-solid fa-sort text-neutral-500"></i>
+                                        </div>
+                                    </th>
+                                    <th onclick="sortTable('name')" class="py-3.5 px-4 border-b border-neutral-800 cursor-pointer hover:text-red-400 transition-colors">
+                                        <div class="flex items-center justify-between">
+                                            <span>Tên Dự Án / Nhân Sự</span>
+                                            <i id="sortIcon-name" class="fa-solid fa-sort text-neutral-500"></i>
+                                        </div>
+                                    </th>
+                                    <th onclick="sortTable('department')" class="py-3.5 px-4 border-b border-neutral-800 cursor-pointer hover:text-red-400 transition-colors">
+                                        <div class="flex items-center justify-between">
+                                            <span>Đơn Vị (Tree Node)</span>
+                                            <i id="sortIcon-department" class="fa-solid fa-sort text-neutral-500"></i>
+                                        </div>
+                                    </th>
+                                    <th onclick="sortTable('budget')" class="py-3.5 px-4 border-b border-neutral-800 cursor-pointer hover:text-red-400 transition-colors text-right">
+                                        <div class="flex items-center justify-end gap-2">
+                                            <span>Ngân Sách (VNĐ)</span>
+                                            <i id="sortIcon-budget" class="fa-solid fa-sort text-neutral-500"></i>
+                                        </div>
+                                    </th>
+                                    <th onclick="sortTable('date')" class="py-3.5 px-4 border-b border-neutral-800 cursor-pointer hover:text-red-400 transition-colors">
+                                        <div class="flex items-center justify-between">
+                                            <span>Ngày Cập Nhật</span>
+                                            <i id="sortIcon-date" class="fa-solid fa-sort text-neutral-500"></i>
+                                        </div>
+                                    </th>
+                                    <th onclick="sortTable('status')" class="py-3.5 px-4 border-b border-neutral-800 cursor-pointer hover:text-red-400 transition-colors">
+                                        <div class="flex items-center justify-between">
+                                            <span>Trạng Thái</span>
+                                            <i id="sortIcon-status" class="fa-solid fa-sort text-neutral-500"></i>
+                                        </div>
+                                    </th>
+                                    <!-- Sticky Right Column: Actions -->
+                                    <th class="sticky-col-right bg-neutral-900 py-3.5 px-4 border-b border-neutral-800 text-center w-32">
+                                        Thao Tác (Sticky R)
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody" class="divide-y divide-neutral-200 text-xs">
+                                <!-- Rendered via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Table Footer -->
+                    <div class="px-6 py-3.5 bg-neutral-50 border-t border-neutral-200 flex flex-wrap items-center justify-between gap-4 text-xs">
+                        <div class="text-neutral-600 font-medium">
+                            Hiển thị <span id="tableCountBadge" class="font-bold text-liver-red">8</span> bản ghi • Sắp xếp hiện tại: <span id="currentSortLabel" class="font-bold text-liver-black">Mặc định</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <span class="text-neutral-500 mr-2">Trang 1 / 1</span>
+                            <button class="w-8 h-8 rounded-lg border border-neutral-300 bg-white text-neutral-400 flex items-center justify-center cursor-not-allowed">
+                                <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                            </button>
+                            <button class="w-8 h-8 rounded-lg bg-liver-red text-white font-bold flex items-center justify-center shadow-sm">
+                                1
+                            </button>
+                            <button class="w-8 h-8 rounded-lg border border-neutral-300 bg-white text-liver-black hover:border-liver-red flex items-center justify-center">
+                                <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== FOOTER ==================== -->
+                <footer class="bg-liver-black text-white rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-3 border border-neutral-800">
+                    <div class="flex items-center gap-3">
+                        <div class="w-7 h-7 rounded bg-liver-red flex items-center justify-center font-extrabold text-xs">L</div>
+                        <span class="text-xs font-bold tracking-wider">LIVER ADMIN SYSTEM</span>
+                    </div>
+                    <div class="text-xs text-neutral-400">
+                        Designed & Built with Black-Red-White Theme • <span class="text-white font-semibold">copy by <span class="text-liver-red">dvant24102003@gmail.com</span></span>
+                    </div>
+                </footer>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- ==================== JAVASCRIPT LOGIC ==================== -->
+    <script>
+        // -------------------------------------------------------------
+        // 5. DATE-RANGE PICKER (UNIFIED CALENDAR POPUP)
+        // -------------------------------------------------------------
+        let rangeYear = 2026;
+        let rangeMonth = 9; // October
+        let rangeSelectingState = 'START'; // 'START' or 'END'
+        let rangeStartDate = { y: 2026, m: 9, d: 1 };
+        let rangeEndDate = { y: 2026, m: 9, d: 24 };
+
+        function toggleDateRangePopup(forceState) {
+            const popup = document.getElementById('dateRangePopup');
+            const isHidden = popup.classList.contains('hidden');
+            const nextState = typeof forceState === 'boolean' ? forceState : isHidden;
+            if (nextState) {
+                closeAllPopups();
+                popup.classList.remove('hidden');
+                rangeSelectingState = 'START';
+                renderRangeCalendar();
+            } else {
+                popup.classList.add('hidden');
+            }
+        }
+
+        function changeRangeMonth(offset) {
+            rangeMonth += offset;
+            if (rangeMonth < 0) {
+                rangeMonth = 11;
+                rangeYear--;
+            } else if (rangeMonth > 11) {
+                rangeMonth = 0;
+                rangeYear++;
+            }
+            renderRangeCalendar();
+        }
+
+        function renderRangeCalendar() {
+            const title = document.getElementById('rangeCalendarTitle');
+            title.textContent = `Tháng ${rangeMonth + 1}, ${rangeYear}`;
+            const daysContainer = document.getElementById('rangeCalendarDays');
+            daysContainer.innerHTML = '';
+
+            const modeLabel = document.getElementById('rangeSelectModeLabel');
+            const activePreview = document.getElementById('rangeActivePreview');
+            const helperNote = document.getElementById('rangeHelperNote');
+
+            if (rangeSelectingState === 'START') {
+                modeLabel.textContent = 'Chọn Từ Ngày';
+                modeLabel.className = 'px-2 py-0.5 rounded bg-liver-black text-white text-[10px] uppercase font-bold';
+                activePreview.textContent = `${String(rangeStartDate.d).padStart(2, '0')}/${String(rangeStartDate.m + 1).padStart(2, '0')}/${rangeStartDate.y}`;
+                helperNote.textContent = 'Bấm chọn ngày bắt đầu khoảng thời gian';
+            } else {
+                modeLabel.textContent = 'Chọn Đến Ngày';
+                modeLabel.className = 'px-2 py-0.5 rounded bg-liver-red text-white text-[10px] uppercase font-bold';
+                activePreview.textContent = `${String(rangeEndDate.d).padStart(2, '0')}/${String(rangeEndDate.m + 1).padStart(2, '0')}/${rangeEndDate.y}`;
+                helperNote.textContent = 'Bấm chọn ngày kết thúc khoảng thời gian';
+            }
+
+            const daysInMonth = new Date(rangeYear, rangeMonth + 1, 0).getDate();
+            const firstDayIndex = (new Date(rangeYear, rangeMonth, 1).getDay() + 6) % 7;
+
+            for (let i = 0; i < firstDayIndex; i++) {
+                daysContainer.innerHTML += `<div></div>`;
+            }
+
+            const startDateObj = new Date(rangeStartDate.y, rangeStartDate.m, rangeStartDate.d);
+            const endDateObj = new Date(rangeEndDate.y, rangeEndDate.m, rangeEndDate.d);
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const currentObj = new Date(rangeYear, rangeMonth, d);
+                const isStart = currentObj.getTime() === startDateObj.getTime();
+                const isEnd = currentObj.getTime() === endDateObj.getTime();
+                const isInRange = currentObj > startDateObj && currentObj < endDateObj;
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = d;
+
+                let btnClass = 'h-8 rounded-lg font-semibold transition-colors text-xs ';
+                if (isStart || isEnd) {
+                    btnClass += 'bg-liver-red text-white shadow font-bold';
+                } else if (isInRange) {
+                    btnClass += 'bg-red-50 text-liver-red font-medium';
+                } else {
+                    btnClass += 'hover:bg-neutral-900 hover:text-white text-liver-black';
+                }
+                btn.className = btnClass;
+
+                btn.onclick = () => {
+                    if (rangeSelectingState === 'START') {
+                        rangeStartDate = { y: rangeYear, m: rangeMonth, d };
+                        // If start date is after current end date, update end date to start date
+                        if (new Date(rangeStartDate.y, rangeStartDate.m, rangeStartDate.d) > new Date(rangeEndDate.y, rangeEndDate.m, rangeEndDate.d)) {
+                            rangeEndDate = { ...rangeStartDate };
+                        }
+                        rangeSelectingState = 'END';
+                        renderRangeCalendar();
+                    } else {
+                        const tempDate = { y: rangeYear, m: rangeMonth, d };
+                        if (new Date(tempDate.y, tempDate.m, tempDate.d) < new Date(rangeStartDate.y, rangeStartDate.m, rangeStartDate.d)) {
+                            rangeStartDate = tempDate;
+                        } else {
+                            rangeEndDate = tempDate;
+                        }
+                        rangeSelectingState = 'START';
+                        updateRangeDisplayFromObjects();
+                        renderRangeCalendar();
+                    }
+                };
+                daysContainer.appendChild(btn);
+            }
+        }
+
+        function updateRangeDisplayFromObjects() {
+            const startStr = `${rangeStartDate.y}-${String(rangeStartDate.m + 1).padStart(2, '0')}-${String(rangeStartDate.d).padStart(2, '0')}`;
+            const endStr = `${rangeEndDate.y}-${String(rangeEndDate.m + 1).padStart(2, '0')}-${String(rangeEndDate.d).padStart(2, '0')}`;
+
+            document.getElementById('rangeStartDisplay').textContent = formatISOToVN(startStr);
+            document.getElementById('rangeEndDisplay').textContent = formatISOToVN(endStr);
+
+            const d1 = new Date(startStr);
+            const d2 = new Date(endStr);
+            const diffDays = Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1);
+            document.getElementById('rangeDaysBadge').textContent = `${diffDays} ngày`;
+        }
+
+        function formatISOToVN(isoStr) {
+            if (!isoStr) return '';
+            const [y, m, d] = isoStr.split('-');
+            return `${d}/${m}/${y}`;
+        }
+
+        function setQuickRange(days) {
+            const end = new Date(2026, 9, 24);
+            const start = new Date(end);
+            start.setDate(end.getDate() - days + 1);
+
+            rangeEndDate = { y: end.getFullYear(), m: end.getMonth(), d: end.getDate() };
+            rangeStartDate = { y: start.getFullYear(), m: start.getMonth(), d: start.getDate() };
+            rangeYear = rangeEndDate.y;
+            rangeMonth = rangeEndDate.m;
+            rangeSelectingState = 'START';
+            updateRangeDisplayFromObjects();
+            renderRangeCalendar();
+        }
+
+        // -------------------------------------------------------------
+        // 7. TREE-SELECT (HIERARCHICAL TREE)
+        // -------------------------------------------------------------
+        const treeData = [
+            {
+                id: 'tech',
+                label: 'Khối Công Nghệ (LIVER Tech)',
+                expanded: true,
+                children: [
+                    { id: 'fe', label: 'Đội Frontend Angular' },
+                    { id: 'be', label: 'Đội Backend Core & API' },
+                    { id: 'devops', label: 'Đội Hạ Tầng Cloud & DevOps' }
+                ]
+            },
+            {
+                id: 'biz',
+                label: 'Khối Kinh Doanh & Vận Hành',
+                expanded: true,
+                children: [
+                    { id: 'sale', label: 'Phòng Kinh Doanh Enterprise' },
+                    { id: 'mkt', label: 'Phòng Growth Marketing' }
+                ]
+            }
+        ];
+        let selectedTreeLabel = 'Khối Công Nghệ > Đội Frontend Angular';
+
+        function toggleTreeSelectDropdown(forceState) {
+            const dropdown = document.getElementById('treeSelectDropdown');
+            const isHidden = dropdown.classList.contains('hidden');
+            const nextState = typeof forceState === 'boolean' ? forceState : isHidden;
+            if (nextState) {
+                closeAllPopups();
+                dropdown.classList.remove('hidden');
+                renderTreeNodes();
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        }
+
+        function renderTreeNodes() {
+            const container = document.getElementById('treeNodesContainer');
+            container.innerHTML = '';
+
+            treeData.forEach((parent, pIdx) => {
+                const parentDiv = document.createElement('div');
+                parentDiv.className = 'space-y-1';
+
+                const headerRow = document.createElement('div');
+                headerRow.className = 'flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-neutral-100 cursor-pointer font-bold text-liver-black';
+                headerRow.innerHTML = `
+                    <div class="flex items-center gap-2" onclick="toggleTreeParent(event, ${pIdx})">
+                        <span class="w-4 h-4 rounded bg-liver-black text-white flex items-center justify-center text-[9px]">
+                            <i class="fa-solid ${parent.expanded ? 'fa-minus' : 'fa-plus'}"></i>
+                        </span>
+                        <i class="fa-regular fa-folder-open text-liver-red"></i>
+                        <span>${parent.label}</span>
+                    </div>
+                `;
+                parentDiv.appendChild(headerRow);
+
+                if (parent.expanded && parent.children) {
+                    const childList = document.createElement('div');
+                    childList.className = 'ml-5 pl-3 border-l-2 border-neutral-200 space-y-1';
+                    parent.children.forEach(child => {
+                        const fullPath = `${parent.label.split(' (')[0]} > ${child.label}`;
+                        const isSelected = selectedTreeLabel === fullPath;
+                        const childItem = document.createElement('div');
+                        childItem.className = `flex items-center justify-between px-2.5 py-1.5 rounded-lg cursor-pointer transition-colors ${
+                            isSelected ? 'bg-liver-red text-white font-bold' : 'hover:bg-neutral-100 text-neutral-700'
+                        }`;
+                        childItem.onclick = () => {
+                            selectedTreeLabel = fullPath;
+                            document.getElementById('treeSelectDisplay').textContent = fullPath;
+                            toggleTreeSelectDropdown(false);
+                        };
+                        childItem.innerHTML = `
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-code-branch text-[10px] ${isSelected ? 'text-white' : 'text-liver-red'}"></i>
+                                <span>${child.label}</span>
+                            </div>
+                            ${isSelected ? '<i class="fa-solid fa-check text-[10px]"></i>' : ''}
+                        `;
+                        childList.appendChild(childItem);
+                    });
+                    parentDiv.appendChild(childList);
+                }
+
+                container.appendChild(parentDiv);
+            });
+        }
+
+        function toggleTreeParent(event, idx) {
+            event.stopPropagation();
+            treeData[idx].expanded = !treeData[idx].expanded;
+            renderTreeNodes();
+        }
+
+        function expandAllTree() {
+            treeData.forEach(p => p.expanded = true);
+            renderTreeNodes();
+        }
+
+        // -------------------------------------------------------------
+        // 8. DATA TABLE (STICKY + MULTI-COLUMN SORT + FILTER)
+        // -------------------------------------------------------------
+        let tableData = [
+            { code: 'LVR-001', name: 'Hệ Thống Core Banking LIVER', department: 'Đội Backend Core & API', budget: 485000000, date: '2026-10-24', status: 'Active' },
+            { code: 'LVR-002', name: 'Nâng Cấp UI Kit Angular 18', department: 'Đội Frontend Angular', budget: 195000000, date: '2026-10-22', status: 'Active' },
+            { code: 'LVR-003', name: 'Tự Động Hóa CI/CD Kubernetes', department: 'Đội Hạ Tầng Cloud & DevOps', budget: 320000000, date: '2026-10-19', status: 'Pending' },
+            { code: 'LVR-004', name: 'Bảo Mật Zero-Trust Gateway', department: 'Đội Hạ Tầng Cloud & DevOps', budget: 610000000, date: '2026-10-25', status: 'Critical' },
+            { code: 'LVR-005', name: 'CRM Quản Lý Khách Hàng VIP', department: 'Phòng Kinh Doanh Enterprise', budget: 275000000, date: '2026-10-15', status: 'Active' },
+            { code: 'LVR-006', name: 'Chiến Dịch Red-Black Branding', department: 'Phòng Growth Marketing', budget: 140000000, date: '2026-10-11', status: 'Pending' },
+            { code: 'LVR-007', name: 'Data Warehouse Realtime Sync', department: 'Đội Backend Core & API', budget: 530000000, date: '2026-10-20', status: 'Active' },
+            { code: 'LVR-008', name: 'App Mobile LIVER SuperApp', department: 'Đội Frontend Angular', budget: 420000000, date: '2026-10-18', status: 'Critical' }
+        ];
+
+        let currentSortField = '';
+        let currentSortDirection = 'asc'; // 'asc' | 'desc'
+
+        function sortTable(field) {
+            if (currentSortField === field) {
+                currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortField = field;
+                currentSortDirection = 'asc';
+            }
+
+            // Update Sort Icons
+            ['code', 'name', 'department', 'budget', 'date', 'status'].forEach(col => {
+                const icon = document.getElementById(`sortIcon-${col}`);
+                if (!icon) return;
+                if (col === currentSortField) {
+                    icon.className = currentSortDirection === 'asc' 
+                        ? 'fa-solid fa-sort-up text-liver-red' 
+                        : 'fa-solid fa-sort-down text-liver-red';
+                } else {
+                    icon.className = 'fa-solid fa-sort text-neutral-500';
+                }
+            });
+
+            document.getElementById('currentSortLabel').textContent = `${field.toUpperCase()} (${currentSortDirection.toUpperCase()})`;
+            filterAndRenderTable();
+        }
+
+        function filterAndRenderTable() {
+            const search = (document.getElementById('tableSearchInput').value || '').toLowerCase();
+            const statusFilter = document.getElementById('tableStatusFilter').value;
+
+            let rows = tableData.filter(item => {
+                const matchText = item.code.toLowerCase().includes(search) ||
+                                  item.name.toLowerCase().includes(search) ||
+                                  item.department.toLowerCase().includes(search);
+                const matchStatus = statusFilter === 'ALL' || item.status === statusFilter;
+                return matchText && matchStatus;
+            });
+
+            if (currentSortField) {
+                rows.sort((a, b) => {
+                    let valA = a[currentSortField];
+                    let valB = b[currentSortField];
+                    if (typeof valA === 'string') valA = valA.toLowerCase();
+                    if (typeof valB === 'string') valB = valB.toLowerCase();
+
+                    if (valA < valB) return currentSortDirection === 'asc' ? -1 : 1;
+                    if (valA > valB) return currentSortDirection === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            }
+
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            rows.forEach((row) => {
+                const badgeStyle = row.status === 'Active'
+                    ? 'bg-neutral-900 text-white border-neutral-700'
+                    : row.status === 'Critical'
+                        ? 'bg-liver-red text-white border-red-700 shadow-sm shadow-red-500/30'
+                        : 'bg-red-50 text-liver-red border-red-200';
+
+                const tr = document.createElement('tr');
+                tr.className = 'group hover:bg-red-50/40 transition-colors';
+                tr.innerHTML = `
+                    <td class="sticky-col-left bg-white group-hover:bg-red-50/90 py-3.5 px-4 font-extrabold text-liver-black border-r border-neutral-100">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-liver-red"></span>
+                            <span>${row.code}</span>
+                        </div>
+                    </td>
+                    <td class="py-3.5 px-4 font-semibold text-liver-black">${row.name}</td>
+                    <td class="py-3.5 px-4 text-neutral-600">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-neutral-100 text-liver-black font-medium">
+                            <i class="fa-solid fa-sitemap text-liver-red text-[10px]"></i>
+                            ${row.department}
+                        </span>
+                    </td>
+                    <td class="py-3.5 px-4 text-right font-bold text-liver-black">
+                        ${row.budget.toLocaleString('vi-VN')} ₫
+                    </td>
+                    <td class="py-3.5 px-4 text-neutral-600 font-medium">${formatISOToVN(row.date)}</td>
+                    <td class="py-3.5 px-4">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${badgeStyle}">
+                            <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+                            ${row.status}
+                        </span>
+                    </td>
+                    <td class="sticky-col-right bg-white group-hover:bg-red-50/90 py-3.5 px-4 text-center border-l border-neutral-100">
+                        <div class="flex items-center justify-center gap-1.5">
+                            <button onclick="showToast('Đang chỉnh sửa bản ghi ${row.code}')" class="w-7 h-7 rounded-md bg-neutral-900 hover:bg-liver-red text-white transition-colors" title="Chỉnh sửa">
+                                <i class="fa-solid fa-pen text-[10px]"></i>
+                            </button>
+                            <button onclick="deleteTableRow('${row.code}')" class="w-7 h-7 rounded-md border border-neutral-300 hover:border-liver-red hover:text-liver-red text-neutral-600 transition-colors" title="Xóa">
+                                <i class="fa-solid fa-trash text-[10px]"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('tableCountBadge').textContent = rows.length;
+        }
+
+        function deleteTableRow(code) {
+            tableData = tableData.filter(x => x.code !== code);
+            filterAndRenderTable();
+            showToast(`Đã xóa dự án ${code}`);
+        }
+
+        function addNewDemoRow() {
+            const nextNum = tableData.length + 1;
+            const newCode = `LVR-00${nextNum}`;
+            const budgetVal = parseInt(document.getElementById('ctrlNumberInput').value || '250000000', 10);
+            const nameVal = document.getElementById('ctrlTextInput').value || `Dự Án LIVER Mới #${nextNum}`;
+            tableData.unshift({
+                code: newCode,
+                name: nameVal,
+                department: selectedTreeLabel.split(' > ').pop(),
+                budget: budgetVal,
+                date: '2026-10-24',
+                status: 'Active'
+            });
+            filterAndRenderTable();
+            showToast(`Đã thêm dòng mới (${newCode}) từ dữ liệu Control vào bảng!`);
+        }
+
+        // -------------------------------------------------------------
+        // 9. FORM SUMMARY & GLOBAL HELPERS
+        // -------------------------------------------------------------
+        function submitFormValues() {
+            const textVal = document.getElementById('ctrlTextInput').value;
+            const numVal = parseInt(document.getElementById('ctrlNumberInput').value || '0', 10).toLocaleString('vi-VN');
+            showToast(`Đã ghi nhận: "${textVal}" | Ngân sách: ${numVal} ₫ | (${selectedNgIds.length} tags)`);
+        }
+
+        function resetAllControls() {
+            document.getElementById('ctrlTextInput').value = 'LIVER Enterprise Project';
+            document.getElementById('ctrlNumberInput').value = 15500000;
+            updateFormattedNumber();
+            selectedSingleId = 'u1';
+            renderNgSingleDisplay();
+            selectedNgIds = ['ang', 'tw', 'rx', 'ts', 'nest'];
+            renderNgSelectTags();
+            customTags = [
+                { id: 't1', label: 'Core-System', type: 'locked' },
+                { id: 't2', label: 'High-Priority', type: 'accent' },
+                { id: 't3', label: 'Release-v2.4', type: 'default' }
+            ];
+            renderCustomTags();
+            selectedTreeLabel = 'Khối Công Nghệ > Đội Frontend Angular';
+            document.getElementById('treeSelectDisplay').textContent = selectedTreeLabel;
+            showToast('Đã khôi phục giá trị mặc định cho toàn bộ Control!');
+        }
+
+        // -------------------------------------------------------------
+        // 10. FLOATING THEME PALETTE SWITCHER
+        // -------------------------------------------------------------
+        const themePalettes = [
+            {
+                id: 'crimson',
+                name: 'Đen - Đỏ - Trắng (Mặc định)',
+                black: '#0a0a0c',
+                dark: '#141417',
+                panel: '#1c1c21',
+                accent: '#dc2626',
+                accentHover: '#b91c1c',
+                accentLight: '#fef2f2',
+                accentBorder: '#fecaca'
+            },
+            {
+                id: 'gold',
+                name: 'Đen - Vàng Gold - Trắng',
+                black: '#0c0a09',
+                dark: '#1c1917',
+                panel: '#292524',
+                accent: '#d97706',
+                accentHover: '#b45309',
+                accentLight: '#fffbeb',
+                accentBorder: '#fde68a'
+            },
+            {
+                id: 'emerald',
+                name: 'Đen - Xanh Ngọc - Trắng',
+                black: '#090d0b',
+                dark: '#111815',
+                panel: '#1a2420',
+                accent: '#059669',
+                accentHover: '#047857',
+                accentLight: '#ecfdf5',
+                accentBorder: '#a7f3d0'
+            },
+            {
+                id: 'cobalt',
+                name: 'Đen Navy - Xanh Dương - Trắng',
+                black: '#090d16',
+                dark: '#0f172a',
+                panel: '#1e293b',
+                accent: '#2563eb',
+                accentHover: '#1d4ed8',
+                accentLight: '#eff6ff',
+                accentBorder: '#bfdbfe'
+            },
+            {
+                id: 'violet',
+                name: 'Đen Tím - Violet - Trắng',
+                black: '#0d0914',
+                dark: '#171024',
+                panel: '#231836',
+                accent: '#7c3aed',
+                accentHover: '#6d28d9',
+                accentLight: '#f5f3ff',
+                accentBorder: '#ddd6fe'
+            }
+        ];
+        let activePaletteId = 'crimson';
+
+        function toggleThemeMenu(forceState) {
+            const popup = document.getElementById('themePalettePopup');
+            const isHidden = popup.classList.contains('hidden');
+            const nextState = typeof forceState === 'boolean' ? forceState : isHidden;
+            if (nextState) {
+                closeAllPopups();
+                popup.classList.remove('hidden');
+                renderPaletteOptions();
+            } else {
+                popup.classList.add('hidden');
+            }
+        }
+
+        function renderPaletteOptions() {
+            const container = document.getElementById('paletteOptionsList');
+            container.innerHTML = '';
+            themePalettes.forEach(p => {
+                const isSelected = p.id === activePaletteId;
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.onclick = () => selectThemePalette(p.id);
+                btn.className = `w-full p-2.5 rounded-xl border text-left flex items-center justify-between transition-all ${
+                    isSelected 
+                        ? 'border-liver-red bg-liver-redLight shadow-sm' 
+                        : 'border-neutral-200 hover:border-neutral-400 bg-white'
+                }`;
+                btn.innerHTML = `
+                    <div class="flex items-center gap-2.5">
+                        <div class="flex items-center -space-x-1.5">
+                            <span class="w-4 h-4 rounded-full border border-white shadow-sm" style="background:${p.black}"></span>
+                            <span class="w-4 h-4 rounded-full border border-white shadow-sm" style="background:${p.accent}"></span>
+                            <span class="w-4 h-4 rounded-full border border-neutral-300 bg-white shadow-sm"></span>
+                        </div>
+                        <span class="text-xs font-bold text-liver-black">${p.name}</span>
+                    </div>
+                    ${isSelected ? '<i class="fa-solid fa-circle-check text-liver-red text-sm"></i>' : ''}
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        function selectThemePalette(paletteId) {
+            const palette = themePalettes.find(x => x.id === paletteId);
+            if (!palette) return;
+            activePaletteId = paletteId;
+
+            const root = document.documentElement;
+            root.style.setProperty('--liver-black', palette.black);
+            root.style.setProperty('--liver-dark', palette.dark);
+            root.style.setProperty('--liver-panel', palette.panel);
+            root.style.setProperty('--liver-red', palette.accent);
+            root.style.setProperty('--liver-red-hover', palette.accentHover);
+            root.style.setProperty('--liver-red-light', palette.accentLight);
+            root.style.setProperty('--liver-red-border', palette.accentBorder);
+
+            renderPaletteOptions();
+            showToast(`Đã đổi sang palette: ${palette.name}`);
+        }
+
+        function closeAllPopups() {
+            document.getElementById('singleDatePopup').classList.add('hidden');
+            document.getElementById('dateRangePopup').classList.add('hidden');
+            document.getElementById('ngSelectDropdown').classList.add('hidden');
+            document.getElementById('treeSelectDropdown').classList.add('hidden');
+            const singleDropdown = document.getElementById('ngSingleDropdown');
+            if (singleDropdown) singleDropdown.classList.add('hidden');
+            const tagDropdown = document.getElementById('ngTagDropdown');
+            if (tagDropdown) tagDropdown.classList.add('hidden');
+            const themePopup = document.getElementById('themePalettePopup');
+            if (themePopup) themePopup.classList.add('hidden');
+        }
+
+        // Close popups when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#dateSection') &&
+                !e.target.closest('#dateRangeSection') &&
+                !e.target.closest('#ngSingleSelectContainer') &&
+                !e.target.closest('#ngSelectContainer') &&
+                !e.target.closest('#ngTagSelectContainer') &&
+                !e.target.closest('#treeSelectContainer') &&
+                !e.target.closest('#themeSwitcherContainer')) {
+                closeAllPopups();
+            }
+        });
+
+        // Sidebar Collapse / Expand Toggle
+        let isSidebarCollapsed = false;
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('sidebarToggleBtn');
+            const toggleIcon = document.getElementById('sidebarToggleIcon');
+            const texts = document.querySelectorAll('.sidebar-text');
+            isSidebarCollapsed = !isSidebarCollapsed;
+            if (isSidebarCollapsed) {
+                sidebar.classList.remove('w-64');
+                sidebar.classList.add('w-20');
+                if (toggleBtn) toggleBtn.style.left = '68px';
+                if (toggleIcon) toggleIcon.className = 'fa-solid fa-chevron-right text-[10px]';
+                texts.forEach(t => t.classList.add('hidden'));
+            } else {
+                sidebar.classList.remove('w-20');
+                sidebar.classList.add('w-64');
+                if (toggleBtn) toggleBtn.style.left = '244px';
+                if (toggleIcon) toggleIcon.className = 'fa-solid fa-chevron-left text-[10px]';
+                texts.forEach(t => t.classList.remove('hidden'));
+            }
+        }
+// ... existing code ...eof
