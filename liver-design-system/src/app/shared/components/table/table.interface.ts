@@ -7,6 +7,15 @@ export interface TableSortState {
   direction: SortDirection;
 }
 
+export interface TableLazyLoadEvent {
+  page: number;
+  pageSize: number;
+  sortField?: string;
+  sortDirection?: SortDirection;
+  searchKeyword?: string;
+  filterValue?: string;
+}
+
 export interface TableColumn<T = any> {
   key: string;
   title: string;
@@ -36,4 +45,3 @@ export interface TableAction<T = any> {
   onClick: (row: T) => void;
   visible?: (row: T) => boolean;
 }
-

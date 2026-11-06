@@ -9,6 +9,7 @@ import { UserService, User, UserRole, UserStatus } from '../../core/services/use
 import { BaseComponent } from '../../shared/components/base/base.component';
 import { InputComponent } from '../../shared/components/input/input.component';
 import { SelectComponent, SelectOption } from '../../shared/components/select/select.component';
+import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-users',
@@ -21,7 +22,8 @@ import { SelectComponent, SelectOption } from '../../shared/components/select/se
     TableComponent,
     TableCellDirective,
     InputComponent,
-    SelectComponent
+    SelectComponent,
+    HasPermissionDirective
   ],
   template: `
     <div class="space-y-6">
@@ -42,6 +44,7 @@ import { SelectComponent, SelectOption } from '../../shared/components/select/se
 
         <div class="flex items-center gap-3 z-10">
           <button
+            *appHasPermission="['USER_CREATE', 'ADMIN']"
             type="button"
             (click)="openAddModal()"
             class="px-4 py-2.5 rounded-xl bg-liver-red hover:bg-liver-redHover text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-liver-red/25 transition-all hover:scale-105"
@@ -182,6 +185,7 @@ import { SelectComponent, SelectOption } from '../../shared/components/select/se
             <!-- Delete Multiple Button (Active when selected > 0) -->
             @if (selectedUsers.length > 0) {
               <button
+                *appHasPermission="['USER_DELETE', 'ADMIN']"
                 type="button"
                 (click)="openBatchDeleteModal()"
                 class="flex-1 h-[42px] px-3 rounded-lg bg-liver-red hover:bg-liver-redHover text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md shadow-liver-red/25 animate-pulse"
@@ -302,6 +306,7 @@ import { SelectComponent, SelectOption } from '../../shared/components/select/se
         <ng-template appTableCell="actionsCol" let-row="row">
           <div class="flex items-center justify-center gap-1.5">
             <button
+              *appHasPermission="['USER_EDIT', 'ADMIN']"
               type="button"
               (click)="openEditModal(row)"
               class="w-7 h-7 rounded-md bg-neutral-900 hover:bg-liver-red text-white transition-colors flex items-center justify-center shadow-sm"
@@ -310,6 +315,7 @@ import { SelectComponent, SelectOption } from '../../shared/components/select/se
               <i class="fa-solid fa-pen text-[10px]"></i>
             </button>
             <button
+              *appHasPermission="['USER_DELETE', 'ADMIN']"
               type="button"
               (click)="openSingleDeleteModal(row)"
               class="w-7 h-7 rounded-md border border-neutral-300 hover:border-liver-red hover:text-liver-red text-neutral-600 transition-colors flex items-center justify-center"

@@ -4,6 +4,7 @@ import { FormBuilder } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { NotificationService, ToastService } from '../../../core/services/notification.service';
 import { ModalService, ConfirmModalOptions } from '../../../core/services/modal.service';
+import { DrawerService, DrawerOptions } from '../../../core/services/drawer.service';
 
 /**
  * BaseComponent - Lớp cơ sở dùng chung cho toàn bộ các Component trong dự án LIVER.
@@ -16,6 +17,7 @@ export abstract class BaseComponent implements OnDestroy {
   protected readonly toast = inject(ToastService);
   protected readonly notificationService = this.toast;
   protected readonly modal = inject(ModalService);
+  protected readonly drawer = inject(DrawerService);
   protected readonly router = inject(Router);
   protected readonly route = inject(ActivatedRoute);
   protected readonly fb = inject(FormBuilder);
@@ -77,6 +79,20 @@ export abstract class BaseComponent implements OnDestroy {
       });
     }
     return this.modal.confirm(messageOrOptions);
+  }
+
+  /**
+   * Mở Drawer bảng trượt cạnh bên
+   */
+  protected openDrawer<T = any>(options: DrawerOptions<T>): void {
+    this.drawer.open(options);
+  }
+
+  /**
+   * Đóng Drawer
+   */
+  protected closeDrawer(result?: any): void {
+    this.drawer.close(result);
   }
 
   /**

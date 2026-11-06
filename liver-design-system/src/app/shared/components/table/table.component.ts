@@ -16,6 +16,7 @@ import {
   SortDirection,
   TableColumn,
   TableFilterOption,
+  TableLazyLoadEvent,
   TableSortState
 } from './table.interface';
 
@@ -71,7 +72,7 @@ export class TableCellDirective {
             @if (filterOptions && filterOptions.length > 0) {
               <select
                 [(ngModel)]="selectedFilter"
-                (ngModelChange)="currentPage = 1"
+                (ngModelChange)="onFilterSelectChange($event)"
                 class="px-3 py-1.5 text-xs bg-neutral-900 border border-neutral-700 rounded-lg text-white hover:border-liver-red focus:outline-none focus:border-liver-red focus:ring-2 focus:ring-liver-red/20 transition-colors cursor-pointer"
               >
                 @for (opt of filterOptions; track opt.value) {
@@ -229,7 +230,7 @@ export class TableCellDirective {
         <div class="px-6 py-3.5 bg-neutral-50 border-t border-neutral-200 flex flex-wrap items-center justify-between gap-4 text-xs">
           <div class="text-neutral-600 font-medium">
             Hiển thị
-            <span class="font-bold text-liver-red">{{ filteredAndSortedRows.length }}</span>
+            <span class="font-bold text-liver-red">{{ totalRecordsCount }}</span>
             bản ghi
             @if (sortState.field) {
               • Sắp xếp:
@@ -314,6 +315,10 @@ export class TableComponent<T = any> {
   @Input() showPagination = true;
   @Input() pageSize = 10;
 
+  // Server-side / Lazy loading configs (Server-side prioritized)
+  @Input() serverSide = true;
+  @Input() totalRecords = 0;
+
   // Custom templates map via Input
   @Input() customTemplates: Record<string, TemplateRef<any>> = {};
 
@@ -331,8 +336,12 @@ export class TableComponent<T = any> {
   @Output() onEditRow = new EventEmitter<T>();   // Backward compatibility
   @Output() onDeleteRow = new EventEmitter<any>(); // Backward compatibility
   @Output() onSort = new EventEmitter<TableSortState>();
+  @Output() onSortChange = new EventEmitter<TableSortState>();
   @Output() onRowClick = new EventEmitter<T>();
   @Output() onSearch = new EventEmitter<string>();
+  @Output() onPageChange = new EventEmitter<number>();
+  @Output() onFilterChange = new EventEmitter<string>();
+  @Output() onLazyLoad = new EventEmitter<TableLazyLoadEvent>();
 
   searchKeyword = '';
   selectedFilter = 'ALL';
@@ -349,8 +358,30 @@ export class TableComponent<T = any> {
   }
 
   onSearchChange(keyword: string): void {
+    this.searchKeyword = keyword;
     this.currentPage = 1;
     this.onSearch.emit(keyword);
+    this.emitLazyLoad();
+  }
+
+  onFilterSelectChange(value: string): void {
+    this.selectedFilter = value;
+    this.currentPage = 1;
+    this.onFilterChange.emit(value);
+    this.emitLazyLoad();
+  }
+
+  emitLazyLoad(): void {
+    if (this.serverSide) {
+      this.onLazyLoad.emit({
+        page: this.currentPage,
+        pageSize: this.pageSize,
+        sortField: this.sortState.field || undefined,
+        sortDirection: this.sortState.direction || undefined,
+        searchKeyword: this.searchKeyword.trim() || undefined,
+        filterValue: this.selectedFilter !== 'ALL' ? this.selectedFilter : undefined
+      });
+    }
   }
 
   getRowId(row: any, fallbackIndex: number): string | number {
@@ -492,11 +523,22 @@ export class TableComponent<T = any> {
     return rows;
   }
 
+  get totalRecordsCount(): number {
+    if (this.serverSide && this.totalRecords > 0) {
+      return this.totalRecords;
+    }
+    return this.filteredAndSortedRows.length;
+  }
+
   get totalPages(): number {
-    return Math.max(1, Math.ceil(this.filteredAndSortedRows.length / this.pageSize));
+    return Math.max(1, Math.ceil(this.totalRecordsCount / this.pageSize));
   }
 
   get paginatedRows(): T[] {
+    if (this.serverSide) {
+      // In server-side mode, data is returned pre-paginated by backend API
+      return this.data;
+    }
     if (!this.showPagination) {
       return this.filteredAndSortedRows;
     }
@@ -519,6 +561,8 @@ export class TableComponent<T = any> {
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
+      this.onPageChange.emit(page);
+      this.emitLazyLoad();
     }
   }
 
@@ -530,6 +574,8 @@ export class TableComponent<T = any> {
       this.sortState.direction = 'asc';
     }
     this.onSort.emit({ ...this.sortState });
+    this.onSortChange.emit({ ...this.sortState });
+    this.emitLazyLoad();
   }
 
   getSortIconClass(field: string): string {

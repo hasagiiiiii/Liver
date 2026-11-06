@@ -75,9 +75,13 @@ export const MENU_ITEMS: MenuItem[] = [
     route: '/analytics'
   },
   {
-    id: 'security',
-    label: 'Security & Role',
-    icon: 'fa-solid fa-shield-halved'
+    id: 'profile',
+    label: 'Hồ Sơ & Bảo Mật (2FA)',
+    icon: 'fa-solid fa-user-shield',
+    route: '/profile',
+    badge: {
+      text: '2FA'
+    }
   }
 ];
 

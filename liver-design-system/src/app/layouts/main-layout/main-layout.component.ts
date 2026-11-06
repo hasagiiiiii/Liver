@@ -3,15 +3,20 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { ThemePaletteComponent } from '../theme-palette/theme-palette.component';
+import { DrawerComponent } from '../../shared/components/drawer/drawer.component';
 import { NotificationService } from '../../core/services/notification.service';
 import { ApiService } from '../../core/services/api.service';
 import { ModalService } from '../../core/services/modal.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, SidebarComponent, ThemePaletteComponent],
+  imports: [CommonModule, RouterModule, SidebarComponent, ThemePaletteComponent, DrawerComponent],
   template: `
+    <!-- Global Drawer Slide-over -->
+    <app-drawer></app-drawer>
+
     <!-- Toast Notification Container -->
     <div class="fixed top-20 right-5 z-50 flex flex-col gap-2 pointer-events-none">
       @for (toast of toasts(); track toast.id) {
@@ -172,15 +177,38 @@ import { ModalService } from '../../core/services/modal.service';
               </span>
             </button>
 
-            <!-- User Profile Display -->
-            <div class="flex items-center gap-2.5 pl-2 border-l border-neutral-200">
-              <div class="w-9 h-9 rounded-lg bg-liver-black text-white font-bold text-xs flex items-center justify-center border-2 border-liver-red">
-                DV
-              </div>
-              <div class="hidden xl:block text-left">
-                <p class="text-xs font-bold text-liver-black leading-none">Dvant Admin</p>
-                <p class="text-[11px] text-liver-red font-medium mt-0.5">dvant24102003&#64;gmail.com</p>
-              </div>
+            <!-- User Profile Display & Quick Actions -->
+            <div class="flex items-center gap-2 pl-2 border-l border-neutral-200">
+              <a
+                routerLink="/profile"
+                class="flex items-center gap-2.5 p-1 rounded-xl hover:bg-neutral-100 transition-colors group cursor-pointer"
+                title="Xem hồ sơ cá nhân"
+              >
+                <div
+                  [style.backgroundColor]="currentUser()?.avatarBg || 'var(--liver-red)'"
+                  class="w-9 h-9 rounded-lg text-white font-bold text-xs flex items-center justify-center border-2 border-liver-red shadow-sm group-hover:scale-105 transition-transform"
+                >
+                  {{ currentUser()?.avatar || 'DT' }}
+                </div>
+                <div class="hidden xl:block text-left">
+                  <p class="text-xs font-bold text-liver-black leading-none group-hover:text-liver-red transition-colors">
+                    {{ currentUser()?.fullName || 'Dvant Admin' }}
+                  </p>
+                  <p class="text-[11px] text-neutral-400 font-medium mt-0.5">
+                    {{ currentUser()?.role || 'ADMIN' }}
+                  </p>
+                </div>
+              </a>
+
+              <!-- Logout Button -->
+              <button
+                type="button"
+                (click)="onLogout()"
+                class="w-9 h-9 rounded-lg border border-neutral-200 hover:border-liver-red hover:bg-liver-redLight text-neutral-500 hover:text-liver-red flex items-center justify-center transition-colors"
+                title="Đăng xuất khỏi hệ thống"
+              >
+                <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
+              </button>
             </div>
           </div>
         </header>
@@ -214,10 +242,16 @@ export class MainLayoutComponent {
   private readonly notificationService = inject(NotificationService);
   private readonly apiService = inject(ApiService);
   private readonly modalService = inject(ModalService);
+  private readonly authService = inject(AuthService);
 
   isSidebarCollapsed = false;
   readonly toasts = this.notificationService.toasts;
   readonly modalState = this.modalService.state;
+  readonly currentUser = this.authService.currentUser;
+
+  onLogout(): void {
+    this.authService.logout();
+  }
 
   onModalConfirm(): void {
     this.modalService.handleConfirm();
@@ -231,6 +265,7 @@ export class MainLayoutComponent {
     const url = this.router.url;
     if (url.includes('/users')) return 'Quản Lý Người Dùng';
     if (url.includes('/analytics')) return 'Báo Cáo & Phân Tích';
+    if (url.includes('/profile')) return 'Hồ Sơ Cá Nhân & Bảo Mật';
     return 'Form Controls & Data Table';
   }
 

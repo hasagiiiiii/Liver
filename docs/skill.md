@@ -363,8 +363,100 @@ Mọi AI khi xây dựng màn hình hoặc chức năng đều **BẮT BUỘC** 
   - SVG Keyframe drop-shadow: `filter: drop-shadow(0 4px 12px var(--liver-red))` và `filter: drop-shadow(0 0 8px var(--liver-red))`
 - **Cách dùng:**
 ```html
-<app-logo [size]="42" [showText]="true"></app-logo>
+<app-logo [size]="42"></app-logo>
 ```
+
+---
+
+### 2.10. File Upload & Dropzone (`app-file-upload`)
+- **Import:** `FileUploadComponent` từ `src/app/shared/components/file-upload/file-upload.component`
+- **Tính năng:**
+  - Vùng kéo thả (Dropzone) đổi viền `border-liver-red` và nền `bg-liver-redLight/40` khi di chuột.
+  - Hỗ trợ chọn nhiều file (`multiple`), giới hạn kích thước (`maxFileSizeMb`), định dạng (`accept`).
+  - Danh sách tệp đính kèm với hình thu nhỏ (image preview), icon thông minh theo đuôi file, thanh tiến trình mô phỏng, xóa file.
+  - Hỗ trợ cả `ControlValueAccessor` (Reactive Forms) và output events (`filesChange`, `fileRemove`).
+- **Cách dùng:**
+```html
+<app-file-upload
+  label="Tài liệu hợp đồng"
+  hint="Hỗ trợ PDF, DOCX, XLSX (Tối đa 10MB)"
+  [multiple]="true"
+  [maxFileSizeMb]="10"
+  accept=".pdf,.docx,.xlsx"
+  (filesChange)="onFilesUploaded($event)">
+</app-file-upload>
+```
+
+---
+
+### 2.11. Drawer Slide-over (`app-drawer` & `DrawerService`)
+- **Import:** `DrawerComponent` từ `src/app/shared/components/drawer/drawer.component` và `DrawerService` từ `src/app/core/services/drawer.service`
+- **Tính năng:**
+  - Bảng trượt mượt mà từ 4 cạnh (`right`, `left`, `top`, `bottom`), kích thước đa dạng (`sm`, `md`, `lg`, `xl`, `full`, hoặc custom width).
+  - Sử dụng linh hoạt theo 2 cách: Khai báo template `<app-drawer [(isOpen)]="isDrawerOpen">` hoặc gọi qua service `this.drawer.open({ title, template, ... })`.
+  - Backdrop làm mờ `bg-black/60 backdrop-blur-[2px]`, đóng khi click ngoài hoặc bấm phím ESC.
+- **Cách dùng qua Service (Khuyên dùng từ BaseComponent):**
+```typescript
+this.openDrawer({
+  title: 'Chi tiết nhân sự',
+  subtitle: 'Xem và cập nhật thông tin tài khoản',
+  icon: 'fa-solid fa-user-pen',
+  placement: 'right',
+  size: 'lg',
+  template: this.detailTemplate,
+  data: selectedUser
+});
+```
+
+---
+
+### 2.12. Tabs Component (`app-tabs` & `app-tab`)
+- **Import:** `TabsComponent`, `TabComponent` từ `src/app/shared/components/tabs/tabs.component`
+- **Tính năng:**
+  - 3 phong cách thiết kế: `line` (thanh gạch chân Theme Palette), `pills` (nút bo tròn nổi bật), `enclosed` (dạng thẻ folder).
+  - Hỗ trợ Icon, Badge số lượng, vô hiệu hóa tab (`[disabled]="true"`), điều hướng hai chiều `[(activeKey)]`.
+- **Cách dùng:**
+```html
+<app-tabs [(activeKey)]="currentTab" variant="line" size="md">
+  <app-tab id="general" label="Thông tin cá nhân" icon="fa-solid fa-user">
+    <p>Nội dung thông tin...</p>
+  </app-tab>
+  <app-tab id="security" label="Đổi mật khẩu" icon="fa-solid fa-lock" badge="2">
+    <p>Nội dung bảo mật...</p>
+  </app-tab>
+</app-tabs>
+```
+
+---
+
+### 2.13. Directive Phân Quyền (`*appHasPermission`) & Router Guards
+- **Import:** `HasPermissionDirective` từ `src/app/shared/directives/has-permission.directive`
+- **Guards:** `authGuard` (chặn truy cập nếu chưa đăng nhập), `permissionGuard` (kiểm tra Role / Permissions).
+- **Tính năng:**
+  - Tự động ẩn hoặc vô hiệu hóa các nút chức năng (Thêm, Sửa, Xóa) nếu người dùng không đủ quyền.
+  - Phản ứng tức thì khi người dùng thay đổi vai trò qua Signals của `AuthService`.
+- **Cách dùng:**
+```html
+<!-- 1. Ẩn hẳn phần tử khỏi DOM -->
+<button *appHasPermission="['USER_DELETE', 'ADMIN']" (click)="deleteUser()">
+  Xóa người dùng
+</button>
+
+<!-- 2. Vẫn hiển thị nhưng vô hiệu hóa (disabled mode) -->
+<button [appHasPermission]="['USER_DELETE']" [appHasPermissionDisabled]="true">
+  Xóa tài khoản
+</button>
+```
+
+---
+
+### 2.14. Bộ Trang Authentication Hoàn Chỉnh
+- **Vị trí:** `src/app/features/auth/` và `src/app/features/profile/`
+- **Gồm có:**
+  1. `LoginComponent` (`/auth/login`): Đăng nhập hệ thống, ghi nhớ đăng nhập, hỗ trợ bộ chọn tài khoản mẫu Quick Demo (Admin / Manager / Developer).
+  2. `ForgotPasswordComponent` (`/auth/forgot-password`): Khôi phục mật khẩu qua Email kèm bộ đếm lùi thời gian gửi lại OTP.
+  3. `Verify2faComponent` (`/auth/verify-2fa`): Nhập mã 6 số OTP tự động nhảy ô và paste chuỗi số.
+  4. `ProfileComponent` (`/profile`): Quản lý hồ sơ cá nhân, upload avatar bằng `app-file-upload`, đổi mật khẩu với thước đo độ mạnh, bật/tắt 2FA và bộ chuyển vai trò thử nghiệm (Role Sandbox).
 
 ---
 

@@ -88,5 +88,44 @@ describe('TableComponent (Common Table)', () => {
     expect(loadingEl).toBeTruthy();
     expect(loadingEl.textContent).toContain('Đang tải dữ liệu...');
   });
+
+  it('should prioritize serverSide mode by default and emit onLazyLoad', () => {
+    expect(component.serverSide).toBe(true);
+
+    let lazyEvent: any;
+    component.onLazyLoad.subscribe(ev => {
+      lazyEvent = ev;
+    });
+
+    component.totalRecords = 100;
+    component.pageSize = 10;
+    expect(component.totalPages).toBe(10);
+
+    component.toggleSort('score');
+    expect(lazyEvent).toEqual(
+      expect.objectContaining({
+        page: 1,
+        pageSize: 10,
+        sortField: 'score',
+        sortDirection: 'asc'
+      })
+    );
+
+    component.goToPage(3);
+    expect(lazyEvent).toEqual(
+      expect.objectContaining({
+        page: 3,
+        pageSize: 10
+      })
+    );
+
+    component.onSearchChange('alpha');
+    expect(lazyEvent).toEqual(
+      expect.objectContaining({
+        page: 1,
+        searchKeyword: 'alpha'
+      })
+    );
+  });
 });
 
