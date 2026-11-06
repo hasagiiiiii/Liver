@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -528,6 +528,7 @@ import { SelectComponent, SelectOption } from '../../shared/components/select/se
 })
 export class UsersComponent extends BaseComponent implements OnInit {
   private readonly userService = inject(UserService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   // Raw data from service
   usersList: User[] = [];
@@ -670,6 +671,7 @@ export class UsersComponent extends BaseComponent implements OnInit {
 
   loadUsers(): void {
     this.isLoading = true;
+    this.cdr.detectChanges();
     this.userService
       .getUsers({
         keyword: this.filterKeyword,
@@ -684,9 +686,11 @@ export class UsersComponent extends BaseComponent implements OnInit {
           const validIdSet = new Set(users.map(u => u.id));
           this.selectedUsers = this.selectedUsers.filter(u => validIdSet.has(u.id));
           this.isLoading = false;
+          this.cdr.detectChanges();
         },
         error: () => {
           this.isLoading = false;
+          this.cdr.detectChanges();
         }
       });
   }
@@ -806,10 +810,12 @@ export class UsersComponent extends BaseComponent implements OnInit {
             this.closeFormModal();
             this.loadUsers();
             this.showSuccess(`Thêm thành công người dùng ${created.fullName} (${created.mnv})`);
+            this.cdr.detectChanges();
           },
           error: () => {
             this.isSubmitting = false;
             this.showError('Lỗi khi thêm người dùng');
+            this.cdr.detectChanges();
           }
         });
     } else if (this.modalMode === 'EDIT' && this.editingUserId) {
@@ -830,10 +836,12 @@ export class UsersComponent extends BaseComponent implements OnInit {
             this.closeFormModal();
             this.loadUsers();
             this.showSuccess(`Cập nhật thông tin ${updated.fullName} thành công!`);
+            this.cdr.detectChanges();
           },
           error: () => {
             this.isSubmitting = false;
             this.showError('Lỗi khi cập nhật người dùng');
+            this.cdr.detectChanges();
           }
         });
     }
@@ -869,10 +877,12 @@ export class UsersComponent extends BaseComponent implements OnInit {
           this.closeDeleteModal();
           this.loadUsers();
           this.showSuccess(`Đã xóa người dùng ${targetUser.fullName} (${targetUser.mnv})`);
+          this.cdr.detectChanges();
         },
         error: () => {
           this.isDeleting = false;
           this.showError('Lỗi khi xóa người dùng');
+          this.cdr.detectChanges();
         }
       });
     } else if (this.deleteTargetMode === 'BATCH') {
@@ -885,10 +895,12 @@ export class UsersComponent extends BaseComponent implements OnInit {
           this.selectedUsers = [];
           this.loadUsers();
           this.showSuccess(`Đã xóa thành công ${count} người dùng được chọn`);
+          this.cdr.detectChanges();
         },
         error: () => {
           this.isDeleting = false;
           this.showError('Lỗi khi xóa nhiều người dùng');
+          this.cdr.detectChanges();
         }
       });
     }
